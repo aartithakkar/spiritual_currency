@@ -1,5 +1,10 @@
+import 'dart:ffi';
+
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants.dart';
 import '../components/icon_content.dart';
 import '../components/reusable_card.dart';
@@ -64,12 +69,14 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  int _counts = 0;
-  int _rounds = 0;
+  late Future<int> _counts;
+  late Future<int> _rounds;
   audioState selectedAudioState = audioState.unmute;
   int height = 180;
-  int guruImageSelected = 0;
-  int lordImageSelected = 0;
+  late int _guruImageSelected;
+  late String _guruImagePath;
+  late int _lordImageSelected;
+  late String _lordImagePath;
   int userRecitations = 108;
   int _recitations = 0;
   Duration mantraDuration = const Duration(seconds: 0);
@@ -77,7 +84,11 @@ class _MyHomePageState extends State<MyHomePage> {
   Duration totalMantraDuration = const Duration(seconds: 0);
   bool isMantraPlay = false;
   final player = AudioPlayer();
-
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+  String _goalText = 'What\'s my goal?';
+  String guruText = 'Find my     Guru/Mentor';
+  final myController = TextEditingController();
+  final recitationController = TextEditingController();
 
   // list of images
   List guruImgList = [
@@ -113,6 +124,8 @@ class _MyHomePageState extends State<MyHomePage> {
   List krishnaMantraList = [
     'Om Namo Bhagavate Vasudevaya',
     'Hare Krishna Hare Krishna Krishna Krishna Hare Hare Hare Rama Hare Rama Rama Rama Hare Hare',
+    'Shri Krishna Sharanam Mama',
+    'Om'
   ];
 
   File? guruImage;
@@ -121,6 +134,93 @@ class _MyHomePageState extends State<MyHomePage> {
   String guruImageAsset = '';
   String lordImageAsset = '';
 
+  void setGuruImageSelected(int selection, String imgPath) async {
+    final SharedPreferences prefs = await _prefs;
+    _guruImageSelected = selection;
+    _guruImagePath = imgPath;
+    _guruImageSelected =
+        await prefs.setInt('guruImageSelected', selection).then((bool success) {
+      return selection;
+    });
+    _guruImagePath =
+        await prefs.setString('guruImagePath', imgPath).then((bool success) {
+      return imgPath;
+    });
+  }
+
+  void getGuruImageSelected() async {
+    _guruImageSelected = await _prefs.then((SharedPreferences prefs) {
+      return prefs.getInt('guruImageSelected') ?? -1;
+    });
+    _guruImagePath = await _prefs.then((SharedPreferences prefs) {
+      return prefs.getString('guruImagePath') ?? '';
+    });
+
+    if (_guruImageSelected != -1) {
+      guruImageAsset = guruImgList[_guruImageSelected];
+    } else if (_guruImagePath != '') {
+      guruImage = File(_guruImagePath);
+    }
+  }
+
+  void setLordImageSelected(int selection, String imgPath, String goalText) async {
+    final SharedPreferences prefs = await _prefs;
+    _lordImageSelected = selection;
+    _lordImagePath = imgPath;
+    _goalText = goalText;
+    _lordImageSelected =
+        await prefs.setInt('lordImageSelected', selection).then((bool success) {
+      return selection;
+    });
+    _lordImagePath =
+        await prefs.setString('lordImagePath', imgPath).then((bool success) {
+      return imgPath;
+    });
+    _goalText =
+    await prefs.setString('goalText', goalText).then((bool success) {
+      return goalText;
+    });
+  }
+
+  void getLordImageSelected() async {
+    _lordImageSelected = await _prefs.then((SharedPreferences prefs) {
+      return prefs.getInt('lordImageSelected') ?? -1;
+    });
+    _lordImagePath = await _prefs.then((SharedPreferences prefs) {
+      return prefs.getString('lordImagePath') ?? '';
+    });
+    _goalText = await _prefs.then((SharedPreferences prefs) {
+      return prefs.getString('goalText') ?? 'What\'s my goal?';
+    });
+
+    if (_lordImageSelected != -1) {
+      lordImageAsset = lordImgList[_lordImageSelected];
+    } else if (_lordImagePath != '') {
+      lordImage = File(_lordImagePath);
+    }
+  }
+
+  void setUserRecitations(int recitations) async {
+    final SharedPreferences prefs = await _prefs;
+    setState(() {
+      userRecitations = recitations > 0 ? recitations : 108;
+      _recitations = userRecitations;
+      updateMantraDuration();
+    });
+    userRecitations =
+    await prefs.setInt('userRecitations', recitations).then((bool success) {
+      return recitations;
+    });
+  }
+
+  void getUserRecitations() async {
+    userRecitations = await _prefs.then((SharedPreferences prefs) {
+      return prefs.getInt('userRecitations') ?? 108;
+    });
+
+    _recitations = userRecitations > 0 ? userRecitations : 108;
+  }
+
   Future getImage(ImageSource media, bool isGuru) async {
     var img = await picker.pickImage(source: media);
 
@@ -128,16 +228,17 @@ class _MyHomePageState extends State<MyHomePage> {
       if (img != null) {
         if (isGuru == true) {
           guruImage = File(img.path);
-          guruImageAsset = '';
+          setGuruImageSelected(-1, img.path);
         } else {
           lordImage = File(img.path);
-          lordImageAsset = '';
+          setLordImageSelected(-1, img.path, '');
         }
       }
     });
   }
 
   void myAlert(bool isGuru) {
+    myController.clear();
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -199,18 +300,44 @@ class _MyHomePageState extends State<MyHomePage> {
                         setState(() {
                           Navigator.pop(context);
                           if (isGuru == true) {
-                            guruImageSelected = pageChanged;
-                            guruImageAsset = guruImgList[guruImageSelected];
-                            guruImage = null;
+                            setGuruImageSelected(pageChanged, '');
+                            guruImageAsset = guruImgList[pageChanged];
+                            //guruImage = null;
                           } else {
-                            lordImageSelected = pageChanged;
-                            lordImageAsset = lordImgList[lordImageSelected];
-                            lordImage = null;
+                            setLordImageSelected(pageChanged, '', '');
+                            lordImageAsset = lordImgList[pageChanged];
+                            //lordImage = null;
                           }
                         });
                       },
                     ),
                   ),
+                  if (isGuru == false)
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.orangeAccent,
+                          borderRadius: BorderRadius.circular(32),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: TextField(
+                            controller: myController,
+                            decoration: new InputDecoration.collapsed(
+                              hintText: 'Type my goal',
+                            ),
+                            onEditingComplete: () {
+                              Navigator.pop(context);
+                              //goalText = myController.text;
+                              setLordImageSelected(-1, '', myController.text);
+                              //lordImage = null;
+                              //lordImageSelected = -1;
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -218,48 +345,175 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
-  void _incrementCounter() {
+  void selectRecitation() {
+    recitationController.clear();
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            title: Text('Please choose recitation to select'),
+            content: SizedBox(
+              height: MediaQuery.of(context).size.height / 2,
+              width: double.maxFinite,
+              child: Column(
+                children: [
+                  ElevatedButton(
+                    //if user click this button, user can upload image from gallery
+                    onPressed: () {
+                      setUserRecitations(1);
+                      Navigator.pop(context);
+                    },
+                    child: Text('1'),
+                  ),
+                  ElevatedButton(
+                    //if user click this button, user can upload image from gallery
+                    onPressed: () {
+                      setUserRecitations(5);
+                      Navigator.pop(context);
+                    },
+                    child: Text('5'),
+                  ),
+                  ElevatedButton(
+                    //if user click this button, user can upload image from gallery
+                    onPressed: () {
+                      setUserRecitations(9);
+                      Navigator.pop(context);
+                    },
+                    child: Text('9'),
+                  ),
+                  ElevatedButton(
+                    //if user click this button, user can upload image from gallery
+                    onPressed: () {
+                      setUserRecitations(11);
+                      Navigator.pop(context);
+                    },
+                    child: Text('11'),
+                  ),
+                  ElevatedButton(
+                    //if user click this button, user can upload image from gallery
+                    onPressed: () {
+                      setUserRecitations(108);
+                      Navigator.pop(context);
+                    },
+                    child: Text('108'),
+                  ),
+                  ElevatedButton(
+                    //if user click this button, user can upload image from gallery
+                    onPressed: () {
+                      setUserRecitations(99999);
+                      Navigator.pop(context);
+                    },
+                    child: Text('Infinite'),
+                  ),
+                  Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.orangeAccent,
+                          borderRadius: BorderRadius.circular(32),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: TextField(
+                            controller: recitationController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                            decoration: const InputDecoration.collapsed(
+                              hintText: 'Type my recitation',
+                            ),
+                            onEditingComplete: () {
+                              Navigator.pop(context);
+                              setUserRecitations(int.parse(recitationController.text));
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  void _incrementCounter() async {
+    final SharedPreferences prefs = await _prefs;
+    int counts_counter = (prefs.getInt('counts') ?? 0) + 1;
+    late int rounds_counter;
+    if (counts_counter == userRecitations) {
+      rounds_counter = (prefs.getInt('rounds') ?? 0) + 1;
+      _rounds = prefs.setInt('rounds', rounds_counter).then((bool success) {
+        return rounds_counter;
+      });
+      //_rounds++;
+      counts_counter = 0;
+    }
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      _counts++;
-      if (_counts == _recitations) {
-        _rounds++;
-        _counts = 0;
+      //final int counter = (prefs.getInt('rounds') ?? 0) + 1;
+      //_rounds = prefs.setInt('rounds', counter).then((bool success) {
+      // return counter;
+      //});
+      if (counts_counter == userRecitations) {
+        _rounds = prefs.setInt('rounds', rounds_counter).then((bool success) {
+          return rounds_counter;
+        });
       }
+
+      _counts = prefs.setInt('counts', counts_counter).then((bool success) {
+        return counts_counter;
+      });
     });
   }
 
-  void _decrementCounter() {
+  void _decrementCounter() async {
+    final SharedPreferences prefs = await _prefs;
+    int counts_counter = (prefs.getInt('counts') ?? 0);
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      if (_counts == 0) {
-        if (_rounds > 0) {
-          _rounds--;
-          _counts = 107;
+      if (counts_counter == 0) {
+        int rounds_counter = (prefs.getInt('rounds') ?? 0);
+        if (rounds_counter > 0) {
+          rounds_counter--;
+          _rounds = prefs.setInt('rounds', rounds_counter).then((bool success) {
+            return rounds_counter;
+          });
+          counts_counter = userRecitations - 1;
         }
       } else {
-        _counts--;
+        counts_counter--;
       }
+      _counts = prefs.setInt('counts', counts_counter).then((bool success) {
+        return counts_counter;
+      });
     });
   }
 
-  void _resetCounter() {
+  void _resetCounter() async {
+    final SharedPreferences prefs = await _prefs;
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      _counts = 0;
-      _rounds = 0;
+      _counts = prefs.setInt('counts', 0).then((bool success) {
+        return 0;
+      });
+      _rounds = prefs.setInt('rounds', 0).then((bool success) {
+        return 0;
+      });
+      //_rounds = 0;
     });
   }
 
@@ -285,21 +539,26 @@ class _MyHomePageState extends State<MyHomePage> {
   void loadMantra() async {
     await player.setSource(AssetSource('sounds/SP3.mp3'));
     mantraDuration = (await player.getDuration())!;
-    totalMantraDuration = Duration(milliseconds: mantraDuration.inMilliseconds * _recitations);
-    mantraPosition = totalMantraDuration;
-    print('########## song Duration is $mantraDuration.');
+    totalMantraDuration =
+        Duration(milliseconds: mantraDuration.inMilliseconds * _recitations);
+    setState(() {
+      mantraPosition = totalMantraDuration;
+    });
 
+    print('########## song Duration is $mantraDuration.');
   }
 
   void getMantraDuration() async {
     mantraDuration = (await player.getDuration())!;
-    totalMantraDuration = Duration(milliseconds: mantraDuration.inMilliseconds * _recitations);
+    totalMantraDuration =
+        Duration(milliseconds: mantraDuration.inMilliseconds * _recitations);
     mantraPosition = totalMantraDuration;
     print('########## song Duration is $mantraDuration.');
   }
 
   void updateMantraDuration() {
-    totalMantraDuration = Duration(milliseconds: mantraDuration.inMilliseconds * _recitations);
+    totalMantraDuration =
+        Duration(milliseconds: mantraDuration.inMilliseconds * _recitations);
     mantraPosition = totalMantraDuration;
     print('########## song Duration is $mantraDuration.');
   }
@@ -307,34 +566,45 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _recitations = userRecitations;
+    _counts = _prefs.then((SharedPreferences prefs) {
+      return prefs.getInt('counts') ?? 0;
+    });
+    _rounds = _prefs.then((SharedPreferences prefs) {
+      return prefs.getInt('rounds') ?? 0;
+    });
+    _guruImageSelected = -1;
+    _guruImagePath = '';
+    getGuruImageSelected();
+    _lordImageSelected = -1;
+    _lordImagePath = '';
+    getLordImageSelected();
+
+    getUserRecitations();
+
 
 
     loadMantra();
     //getMantraDuration();
 
-
-
-
     player.onDurationChanged.listen((Duration d) {
       //updateMantraDuration();
- //     print('Max duration: $d');
+      //     print('Max duration: $d');
       //setState(() {
-        //mantraDuration = Duration(seconds: d.inSeconds * _recitations);
-        //mantraPosition = mantraDuration;
-        //print('************* $mantraDuration');
+      //mantraDuration = Duration(seconds: d.inSeconds * _recitations);
+      //mantraPosition = mantraDuration;
+      //print('************* $mantraDuration');
       //});
     });
 
-    player.onPositionChanged.listen((Duration  p) {
-   //   print('Current position: $p');
+    player.onPositionChanged.listen((Duration p) {
+      //   print('Current position: $p');
       setState(() {
         mantraPosition = totalMantraDuration - p;
       });
     });
 
     player.onPlayerComplete.listen((event) {
-      setState(() {
+      setState(() async {
         mantraPosition = mantraDuration;
         if (_recitations == 1) {
           _recitations = userRecitations;
@@ -344,17 +614,25 @@ class _MyHomePageState extends State<MyHomePage> {
         } else {
           _recitations--;
           updateMantraDuration();
-          player.play(AssetSource('sounds/SP3.mp3'));
+          if (isMantraPlay == false) {
+            await player.pause();
+          } else {
+            await player.play(AssetSource('sounds/SP3.mp3'));
+          }
         }
       });
     });
   }
 
-
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    myController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -382,17 +660,17 @@ class _MyHomePageState extends State<MyHomePage> {
                         },
                       );
                     },
-                    cardChild: lordImage == null
-                        ? (lordImageAsset == ''
+                    cardChild: _lordImagePath == ''
+                        ? (_lordImageSelected == -1
                             ? ImageContent(
                                 displayImage:
                                     AssetImage('assets/graphics/Blank.jpeg'),
-                                label: 'LORD')
+                                label: _goalText)
                             : ImageContent(
                                 displayImage: AssetImage(lordImageAsset),
-                                label: 'LORD'))
+                                label: ''))
                         : ImageContent(
-                            displayImage: FileImage(lordImage!), label: 'LORD'),
+                            displayImage: FileImage(lordImage!), label: ''),
                   ),
                 ),
                 Expanded(
@@ -400,17 +678,17 @@ class _MyHomePageState extends State<MyHomePage> {
                     onPress: () {
                       myAlert(true);
                     },
-                    cardChild: guruImage == null
-                        ? (guruImageAsset == ''
+                    cardChild: _guruImagePath == ''
+                        ? (_guruImageSelected == -1
                             ? ImageContent(
                                 displayImage:
                                     AssetImage('assets/graphics/Blank.jpeg'),
-                                label: 'GURU')
+                                label: guruText)
                             : ImageContent(
                                 displayImage: AssetImage(guruImageAsset),
-                                label: 'GURU'))
+                                label: ''))
                         : ImageContent(
-                            displayImage: FileImage(guruImage!), label: 'GURU'),
+                            displayImage: FileImage(guruImage!), label: ''),
                   ),
                 ),
               ],
@@ -421,17 +699,26 @@ class _MyHomePageState extends State<MyHomePage> {
               cardChild: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Container(
-                    width: MediaQuery.of(context).size.width * 0.9,
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      krishnaMantraList[1],
-                      style: kLabelTextStyle,
-                      textAlign: TextAlign.center,
-                      //overflow: TextOverflow.values,
+                  Expanded(flex: 1, child: SizedBox(height: MediaQuery.of(context).size.height * 1),),
+                  Expanded(
+                    flex: 8,
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      child: Center(
+                        child: AutoSizeText(
+                          krishnaMantraList[1],
+                          style: kLabelTextStyle,
+                          textAlign: TextAlign.center,
+                          maxLines: 4,
+                          presetFontSizes: [40, (MediaQuery.of(context).size.height * MediaQuery.of(context).size.width * 0.00009), 14],
+
+                          //overflow: TextOverflow.values,
+                        ),
+                      ),
                     ),
                   ),
                   Expanded(
+                    flex: 3,
                     child: Align(
                       alignment: FractionalOffset.bottomCenter,
                       child: Row(
@@ -477,13 +764,12 @@ class _MyHomePageState extends State<MyHomePage> {
                           Expanded(
                             flex: 2,
                             child: Container(
-                              alignment: Alignment.bottomCenter,
-                              child: Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: FloatingActionButton.small(
-                                  onPressed: playPauseMantra,
-                                  child: isMantraPlay == true ? const Icon(Icons.pause) : const Icon(Icons.play_arrow),
-                                ),
+                              alignment: Alignment.center,
+                              child: FloatingActionButton.small(
+                                onPressed: playPauseMantra,
+                                child: isMantraPlay == true
+                                    ? const Icon(Icons.pause)
+                                    : const Icon(Icons.play_arrow),
                               ),
                             ),
                           ),
@@ -510,7 +796,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
-                                      onPressed: () {},
+                                      onPressed: selectRecitation,
                                       child: Text(' Recitation: $_recitations'),
                                     ),
                                   ],
@@ -532,67 +818,102 @@ class _MyHomePageState extends State<MyHomePage> {
               cardChild: Column(
                 //mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: Image.asset('assets/icons/japa_mala_edited.png',
-                          color: Colors.black,),
-                        //Icon(Icons.motion_photos_auto_outlined),
-                      ),
-                      IconButton(
-                        onPressed: _resetCounter,
-                        icon: Icon(Icons.replay),
-                      ),
-                      IconButton(
-                        onPressed: _decrementCounter,
-                        icon: Icon(Icons.exposure_minus_1),
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: Icon(Icons.person_outline),
-                      ),
-                    ],
+                  Expanded(
+                    flex: 1,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                          onPressed: () {},
+                          icon: Image.asset(
+                            'assets/icons/japa_mala_edited.png',
+                            color: Colors.black,
+                          ),
+                          //Icon(Icons.motion_photos_auto_outlined),
+                        ),
+                        IconButton(
+                          onPressed: _resetCounter,
+                          icon: Icon(Icons.replay),
+                        ),
+                        IconButton(
+                          onPressed: _decrementCounter,
+                          icon: Icon(Icons.exposure_minus_1),
+                        ),
+                        IconButton(
+                          onPressed: () {},
+                          icon: Image.asset(
+                            'assets/icons/cureman_logo.png',
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          primary: Colors.black,
-                          padding: const EdgeInsets.all(2.0),
-                          textStyle: kNumberTextStyle,
-                        ),
-                        onPressed: () {},
-                        child: Text(
-                          _rounds.toString(),
-                        ),
-                      ),
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          primary: Colors.black,
-                          padding: const EdgeInsets.all(8.0),
-                          textStyle: kNumberTextStyle,
-                        ),
-                        onPressed: () {},
-                        child: Text(
-                          _counts.toString(),
-                        ),
-                      ),
-                    ],
+                  Expanded(
+                    flex: 4,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        FutureBuilder<int>(
+                            future: _rounds,
+                            builder: (BuildContext context,
+                                AsyncSnapshot<int> snapshot) {
+                              switch (snapshot.connectionState) {
+                                case ConnectionState.waiting:
+                                  return const CircularProgressIndicator();
+                                default:
+                                  if (snapshot.hasError) {
+                                    return Text('Error: ${snapshot.error}');
+                                  } else {
+                                    return Text('${snapshot.data}', style: const TextStyle(
+                                      color: Colors.black,
+                                      //padding: const EdgeInsets.all(2.0),
+                                      fontSize: 50.0,
+                                      fontWeight: FontWeight.w900,
+                                    ),);
+                                  }
+                              }
+                            }),
+                        FutureBuilder<int>(
+                            future: _counts,
+                            builder: (BuildContext context,
+                                AsyncSnapshot<int> snapshot) {
+                              switch (snapshot.connectionState) {
+                                case ConnectionState.waiting:
+                                  return const CircularProgressIndicator();
+                                default:
+                                  if (snapshot.hasError) {
+                                    return Text('Error: ${snapshot.error}');
+                                  } else {
+                                    return Text('${snapshot.data}', style: const TextStyle(
+                                      color: Colors.black,
+                                      //padding: const EdgeInsets.all(2.0),
+                                      fontSize: 50.0,
+                                      fontWeight: FontWeight.w900,
+                                    ),);
+                                  }
+                              }
+                            }),
+                      ],
+                    ),
                   ),
                 ],
               ),
               onPress: _incrementCounter,
             ),
           ),
+
         ],
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+
+/*
+  @override
+  String? get restorationId => "home_screen";
+*/
 }
 
 /*
