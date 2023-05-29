@@ -37,6 +37,8 @@ dependencies:
   font_awesome_flutter: ^10.3.0
   image_picker: ^0.8.6
   audioplayers: ^2.0.0
+  shared_preferences: ^2.0.16
+  auto_size_text: ^3.0.0
 
 dev_dependencies:
   flutter_test:
