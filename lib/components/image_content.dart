@@ -12,20 +12,22 @@ class ImageContent extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        SizedBox(
-          height: 1.0,
-        ),
         Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(kBorderRadiusCircular),
-            child: Image(
-              image: ResizeImage(displayImage, width: 400, height:500, allowUpscaling: true),
-              //fit: BoxFit.fill,
-            ),
+          child: Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(kBorderRadiusCircular),
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  decoration: BoxDecoration(image: DecorationImage(image: displayImage, fit: BoxFit.fill),),
+                ),
+              ),
+              Center(child: Text(label,
+                style: kLabelTextStyle,
+                textAlign: TextAlign.center,),),
+            ],
           ),
-        ),
-        SizedBox(
-          height: 1.0,
         ),
       ],
     );
