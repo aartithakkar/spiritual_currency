@@ -163,7 +163,8 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void setLordImageSelected(int selection, String imgPath, String goalText) async {
+  void setLordImageSelected(
+      int selection, String imgPath, String goalText) async {
     final SharedPreferences prefs = await _prefs;
     _lordImageSelected = selection;
     _lordImagePath = imgPath;
@@ -177,7 +178,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return imgPath;
     });
     _goalText =
-    await prefs.setString('goalText', goalText).then((bool success) {
+        await prefs.setString('goalText', goalText).then((bool success) {
       return goalText;
     });
   }
@@ -203,13 +204,13 @@ class _MyHomePageState extends State<MyHomePage> {
   void setUserRecitations(int recitations) async {
     final SharedPreferences prefs = await _prefs;
     setState(() {
-      userRecitations = recitations > 0 ? recitations : 108;
+      userRecitations = recitations > 0 ? (recitations > 99999 ? 99999 : recitations) : 108;
       _recitations = userRecitations;
       updateMantraDuration();
     });
     userRecitations =
-    await prefs.setInt('userRecitations', recitations).then((bool success) {
-      return recitations;
+        await prefs.setInt('userRecitations', userRecitations).then((bool success) {
+      return userRecitations;
     });
   }
 
@@ -352,7 +353,7 @@ class _MyHomePageState extends State<MyHomePage> {
         builder: (BuildContext context) {
           return AlertDialog(
             shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             title: Text('Please choose recitation to select'),
             content: SizedBox(
               height: MediaQuery.of(context).size.height / 2,
@@ -408,29 +409,32 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Text('Infinite'),
                   ),
                   Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.orangeAccent,
-                          borderRadius: BorderRadius.circular(32),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TextField(
-                            controller: recitationController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                            decoration: const InputDecoration.collapsed(
-                              hintText: 'Type my recitation',
-                            ),
-                            onEditingComplete: () {
-                              Navigator.pop(context);
-                              setUserRecitations(int.parse(recitationController.text));
-                            },
+                    padding: const EdgeInsets.all(16.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.orangeAccent,
+                        borderRadius: BorderRadius.circular(32),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextField(
+                          controller: recitationController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          decoration: const InputDecoration.collapsed(
+                            hintText: 'Type my recitation',
                           ),
+                          onEditingComplete: () {
+                            Navigator.pop(context);
+                            setUserRecitations(
+                                int.parse(recitationController.text));
+                          },
                         ),
                       ),
                     ),
+                  ),
                 ],
               ),
             ),
@@ -581,8 +585,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     getUserRecitations();
 
-
-
     loadMantra();
     //getMantraDuration();
 
@@ -699,7 +701,11 @@ class _MyHomePageState extends State<MyHomePage> {
               cardChild: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Expanded(flex: 1, child: SizedBox(height: MediaQuery.of(context).size.height * 1),),
+                  Expanded(
+                    flex: 1,
+                    child: SizedBox(
+                        height: MediaQuery.of(context).size.height * 1),
+                  ),
                   Expanded(
                     flex: 8,
                     child: SizedBox(
@@ -710,7 +716,13 @@ class _MyHomePageState extends State<MyHomePage> {
                           style: kLabelTextStyle,
                           textAlign: TextAlign.center,
                           maxLines: 4,
-                          presetFontSizes: [40, (MediaQuery.of(context).size.height * MediaQuery.of(context).size.width * 0.00009), 14],
+                          presetFontSizes: [
+                            40,
+                            (MediaQuery.of(context).size.height *
+                                MediaQuery.of(context).size.width *
+                                0.00009),
+                            14
+                          ],
 
                           //overflow: TextOverflow.values,
                         ),
@@ -835,6 +847,17 @@ class _MyHomePageState extends State<MyHomePage> {
                           onPressed: _resetCounter,
                           icon: Icon(Icons.replay),
                         ),
+                        TextButton(
+                          onPressed: selectRecitation,
+                          child: Text(
+                            userRecitations.toString(),
+                            style: const TextStyle(
+                              fontSize: 24,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
                         IconButton(
                           onPressed: _decrementCounter,
                           icon: Icon(Icons.exposure_minus_1),
@@ -867,12 +890,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                   if (snapshot.hasError) {
                                     return Text('Error: ${snapshot.error}');
                                   } else {
-                                    return Text('${snapshot.data}', style: const TextStyle(
-                                      color: Colors.black,
-                                      //padding: const EdgeInsets.all(2.0),
-                                      fontSize: 50.0,
-                                      fontWeight: FontWeight.w900,
-                                    ),);
+                                    return Text(
+                                      '${snapshot.data}',
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        //padding: const EdgeInsets.all(2.0),
+                                        fontSize: 50.0,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    );
                                   }
                               }
                             }),
@@ -887,12 +913,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                   if (snapshot.hasError) {
                                     return Text('Error: ${snapshot.error}');
                                   } else {
-                                    return Text('${snapshot.data}', style: const TextStyle(
-                                      color: Colors.black,
-                                      //padding: const EdgeInsets.all(2.0),
-                                      fontSize: 50.0,
-                                      fontWeight: FontWeight.w900,
-                                    ),);
+                                    return Text(
+                                      '${snapshot.data}',
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        //padding: const EdgeInsets.all(2.0),
+                                        fontSize: 50.0,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    );
                                   }
                               }
                             }),
@@ -904,7 +933,6 @@ class _MyHomePageState extends State<MyHomePage> {
               onPress: _incrementCounter,
             ),
           ),
-
         ],
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
