@@ -13,6 +13,7 @@ import '../components/image_selector.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
+import 'scale_size.dart';
 
 enum audioState {
   unmute,
@@ -87,8 +88,10 @@ class _MyHomePageState extends State<MyHomePage> {
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   String _goalText = 'What\'s my goal?';
   String guruText = 'Find my     Guru/Mentor';
+  String userMantra = 'My Mantra';
   final myController = TextEditingController();
   final recitationController = TextEditingController();
+  final mantraController = TextEditingController();
 
   // list of images
   List guruImgList = [
@@ -117,15 +120,10 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
 
   List mantraList = [
-    'KrishnaMantraList',
-    'GaneshMantraList',
-  ];
-
-  List krishnaMantraList = [
-    'Om Namo Bhagavate Vasudevaya',
     'Hare Krishna Hare Krishna Krishna Krishna Hare Hare Hare Rama Hare Rama Rama Rama Hare Hare',
     'Shri Krishna Sharanam Mama',
-    'Om'
+    'Om',
+    '',
   ];
 
   File? guruImage;
@@ -204,13 +202,26 @@ class _MyHomePageState extends State<MyHomePage> {
   void setUserRecitations(int recitations) async {
     final SharedPreferences prefs = await _prefs;
     setState(() {
-      userRecitations = recitations > 0 ? (recitations > 99999 ? 99999 : recitations) : 108;
+      userRecitations =
+          recitations > 0 ? (recitations > 99999 ? 99999 : recitations) : 108;
       _recitations = userRecitations;
       updateMantraDuration();
     });
-    userRecitations =
-        await prefs.setInt('userRecitations', userRecitations).then((bool success) {
+    userRecitations = await prefs
+        .setInt('userRecitations', userRecitations)
+        .then((bool success) {
       return userRecitations;
+    });
+  }
+
+  void setUserMantra(String mantra) async {
+    final SharedPreferences prefs = await _prefs;
+    setState(() {
+      userMantra = mantra;
+    });
+    userMantra =
+        await prefs.setString('userMantra', userMantra).then((bool success) {
+      return userMantra;
     });
   }
 
@@ -442,6 +453,78 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
+  void mantraDialog() {
+    mantraController.clear();
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            title: Text('Select my mantra'),
+            content: SizedBox(
+              height: MediaQuery.of(context).size.height / 2,
+              width: double.maxFinite,
+              child: Column(
+                children: [
+                  Expanded(
+                    flex: 4,
+                    child: ListView.separated(
+                        itemBuilder: (BuildContext context, int index) {
+                          return ListTile(
+                            title: Text(
+                              mantraList[index],
+                              style: const TextStyle(color: Colors.black),
+                              textScaleFactor:
+                                  ScaleSize.textScaleFactor(context),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+                              setUserMantra(mantraList[index]);
+                            },
+                          );
+                        },
+                        separatorBuilder: (BuildContext context, int index) =>
+                            Divider(
+                              color: Colors.grey[600],
+                            ),
+                        itemCount: mantraList.length),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.orangeAccent,
+                            borderRadius: BorderRadius.circular(32),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: TextField(
+                              controller: mantraController,
+                              decoration: const InputDecoration.collapsed(
+                                hintText: 'Type my mantra',
+                              ),
+                              onEditingComplete: () {
+                                Navigator.pop(context);
+                                setUserMantra(mantraController.text);
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
   void _incrementCounter() async {
     final SharedPreferences prefs = await _prefs;
     int counts_counter = (prefs.getInt('counts') ?? 0) + 1;
@@ -545,6 +628,11 @@ class _MyHomePageState extends State<MyHomePage> {
     mantraDuration = (await player.getDuration())!;
     totalMantraDuration =
         Duration(milliseconds: mantraDuration.inMilliseconds * _recitations);
+
+    userMantra = await _prefs.then((SharedPreferences prefs) {
+      return prefs.getString('userMantra') ?? 'My Mantra';
+    });
+
     setState(() {
       mantraPosition = totalMantraDuration;
     });
@@ -712,7 +800,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       width: MediaQuery.of(context).size.width * 0.9,
                       child: Center(
                         child: AutoSizeText(
-                          krishnaMantraList[1],
+                          userMantra,
                           style: kLabelTextStyle,
                           textAlign: TextAlign.center,
                           maxLines: 4,
@@ -822,7 +910,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ],
               ),
-              onPress: () {},
+              onPress: mantraDialog,
             ),
           ),
           Expanded(
