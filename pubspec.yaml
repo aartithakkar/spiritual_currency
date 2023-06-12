@@ -39,6 +39,7 @@ dependencies:
   audioplayers: ^2.0.0
   shared_preferences: ^2.0.16
   auto_size_text: ^3.0.0
+  wakelock: ^0.6.2
 
 dev_dependencies:
   flutter_test:

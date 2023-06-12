@@ -14,6 +14,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'scale_size.dart';
+import 'package:wakelock/wakelock.dart';
 
 enum audioState {
   unmute,
@@ -69,9 +70,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  late Future<int> _counts;
-  late Future<int> _rounds;
+  int _counts = 0;
   audioState selectedAudioState = audioState.unmute;
   int height = 180;
   late int _guruImageSelected;
@@ -80,6 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late String _lordImagePath;
   int userRecitations = 108;
   int _recitations = 0;
+  bool isCounterRunning = false;
   Duration mantraDuration = const Duration(seconds: 0);
   Duration mantraPosition = const Duration(seconds: 0);
   Duration totalMantraDuration = const Duration(seconds: 0);
@@ -215,6 +215,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void setUserMantra(String mantra) async {
+    if (mantra == '') {
+      return;
+    }
     final SharedPreferences prefs = await _prefs;
     setState(() {
       userMantra = mantra;
@@ -492,31 +495,41 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                         itemCount: mantraList.length),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        Container(
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.width * 0.11,
                           decoration: BoxDecoration(
                             color: Colors.orangeAccent,
                             borderRadius: BorderRadius.circular(32),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: TextField(
-                              controller: mantraController,
-                              decoration: const InputDecoration.collapsed(
-                                hintText: 'Type my mantra',
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: TextField(
+                                controller: mantraController,
+                                decoration: const InputDecoration.collapsed(
+                                  hintText: 'Type my mantra',
+                                ),
+                                onEditingComplete: () {
+                                  Navigator.pop(context);
+                                  setUserMantra(mantraController.text);
+                                },
                               ),
-                              onEditingComplete: () {
-                                Navigator.pop(context);
-                                setUserMantra(mantraController.text);
-                              },
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      const FloatingActionButton.small(
+                        onPressed: null,
+                        tooltip: 'Upload mantra sound',
+                        child: Icon(
+                          Icons.music_note_rounded,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -527,62 +540,39 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _incrementCounter() async {
     final SharedPreferences prefs = await _prefs;
-    int counts_counter = (prefs.getInt('counts') ?? 0) + 1;
-    late int rounds_counter;
-    if (counts_counter == userRecitations) {
-      rounds_counter = (prefs.getInt('rounds') ?? 0) + 1;
-      _rounds = prefs.setInt('rounds', rounds_counter).then((bool success) {
-        return rounds_counter;
-      });
-      //_rounds++;
-      counts_counter = 0;
-    }
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      //final int counter = (prefs.getInt('rounds') ?? 0) + 1;
-      //_rounds = prefs.setInt('rounds', counter).then((bool success) {
-      // return counter;
-      //});
-      if (counts_counter == userRecitations) {
-        _rounds = prefs.setInt('rounds', rounds_counter).then((bool success) {
-          return rounds_counter;
-        });
+      _counts++;
+      if (_counts == 1) {
+        isCounterRunning = true;
       }
-
-      _counts = prefs.setInt('counts', counts_counter).then((bool success) {
-        return counts_counter;
-      });
+    });
+    _counts = await prefs.setInt('counts', _counts).then((bool success) {
+      return _counts;
     });
   }
 
   void _decrementCounter() async {
     final SharedPreferences prefs = await _prefs;
-    int counts_counter = (prefs.getInt('counts') ?? 0);
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      if (counts_counter == 0) {
-        int rounds_counter = (prefs.getInt('rounds') ?? 0);
-        if (rounds_counter > 0) {
-          rounds_counter--;
-          _rounds = prefs.setInt('rounds', rounds_counter).then((bool success) {
-            return rounds_counter;
-          });
-          counts_counter = userRecitations - 1;
+      if (_counts > 0) {
+        _counts--;
+        if (_counts == 0) {
+          isCounterRunning = false;
         }
-      } else {
-        counts_counter--;
       }
-      _counts = prefs.setInt('counts', counts_counter).then((bool success) {
-        return counts_counter;
-      });
+    });
+    _counts = await prefs.setInt('counts', _counts).then((bool success) {
+      return _counts;
     });
   }
 
@@ -594,13 +584,11 @@ class _MyHomePageState extends State<MyHomePage> {
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      _counts = prefs.setInt('counts', 0).then((bool success) {
-        return 0;
-      });
-      _rounds = prefs.setInt('rounds', 0).then((bool success) {
-        return 0;
-      });
-      //_rounds = 0;
+      _counts = 0;
+      isCounterRunning = false;
+    });
+    _counts = await prefs.setInt('counts', _counts).then((bool success) {
+      return _counts;
     });
   }
 
@@ -655,15 +643,21 @@ class _MyHomePageState extends State<MyHomePage> {
     print('########## song Duration is $mantraDuration.');
   }
 
+  void loadCounterState() async {
+    _counts = await _prefs.then((SharedPreferences prefs) {
+      return prefs.getInt('counts') ?? 0;
+    });
+    if (_counts > 0) {
+      isCounterRunning = true;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _counts = _prefs.then((SharedPreferences prefs) {
-      return prefs.getInt('counts') ?? 0;
-    });
-    _rounds = _prefs.then((SharedPreferences prefs) {
-      return prefs.getInt('rounds') ?? 0;
-    });
+
+    loadCounterState();
+
     _guruImageSelected = -1;
     _guruImagePath = '';
     getGuruImageSelected();
@@ -723,6 +717,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    Wakelock.toggle(enable: isMantraPlay | isCounterRunning);
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -967,52 +962,24 @@ class _MyHomePageState extends State<MyHomePage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       textBaseline: TextBaseline.alphabetic,
                       children: [
-                        FutureBuilder<int>(
-                            future: _rounds,
-                            builder: (BuildContext context,
-                                AsyncSnapshot<int> snapshot) {
-                              switch (snapshot.connectionState) {
-                                case ConnectionState.waiting:
-                                  return const CircularProgressIndicator();
-                                default:
-                                  if (snapshot.hasError) {
-                                    return Text('Error: ${snapshot.error}');
-                                  } else {
-                                    return Text(
-                                      '${snapshot.data}',
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        //padding: const EdgeInsets.all(2.0),
-                                        fontSize: 50.0,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    );
-                                  }
-                              }
-                            }),
-                        FutureBuilder<int>(
-                            future: _counts,
-                            builder: (BuildContext context,
-                                AsyncSnapshot<int> snapshot) {
-                              switch (snapshot.connectionState) {
-                                case ConnectionState.waiting:
-                                  return const CircularProgressIndicator();
-                                default:
-                                  if (snapshot.hasError) {
-                                    return Text('Error: ${snapshot.error}');
-                                  } else {
-                                    return Text(
-                                      '${snapshot.data}',
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        //padding: const EdgeInsets.all(2.0),
-                                        fontSize: 50.0,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    );
-                                  }
-                              }
-                            }),
+                        Text(
+                          '${(_counts / userRecitations).floor()}',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            //padding: const EdgeInsets.all(2.0),
+                            fontSize: 50.0,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        Text(
+                          '${_counts % userRecitations}',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            //padding: const EdgeInsets.all(2.0),
+                            fontSize: 50.0,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
                       ],
                     ),
                   ),
