@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants.dart';
@@ -77,6 +78,9 @@ class _MyHomePageState extends State<MyHomePage> {
   late String _guruImagePath;
   late int _lordImageSelected;
   late String _lordImagePath;
+  late int _mantraSoundSelected;
+  late String _mantraSoundPath;
+  late Source _mantraSoundSource;
   int userRecitations = 108;
   int _recitations = 0;
   bool isCounterRunning = false;
@@ -89,6 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _goalText = 'What\'s my goal?';
   String guruText = 'Find my     Guru/Mentor';
   String userMantra = 'My Mantra';
+  String userMantraSound = 'ACBSP Hare Krishna Mantra';
   final myController = TextEditingController();
   final recitationController = TextEditingController();
   final mantraController = TextEditingController();
@@ -126,11 +131,25 @@ class _MyHomePageState extends State<MyHomePage> {
     '',
   ];
 
+  List mantraSoundList = [
+    'ACBSP Hare Krishna Mantra',
+    'Shri Krishna Sharanam Mama',
+    'Om',
+  ];
+
+  List mantraSoundAssetList = [
+    'sounds/SP3.mp3',
+    'sounds/ShriKrishnaSharanamMama.mp3',
+    'sounds/SP3.mp3',
+  ];
+
   File? guruImage;
   File? lordImage;
+  File? mantraSound;
   final ImagePicker picker = ImagePicker();
   String guruImageAsset = '';
   String lordImageAsset = '';
+  String mantraSoundAsset = '';
 
   void setGuruImageSelected(int selection, String imgPath) async {
     final SharedPreferences prefs = await _prefs;
@@ -214,7 +233,15 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void setUserMantra(String mantra) async {
+  void getUserRecitations() async {
+    userRecitations = await _prefs.then((SharedPreferences prefs) {
+      return prefs.getInt('userRecitations') ?? 108;
+    });
+
+    _recitations = userRecitations > 0 ? userRecitations : 108;
+  }
+
+  void setMantraSelected(String mantra) async {
     if (mantra == '') {
       return;
     }
@@ -228,12 +255,64 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void getUserRecitations() async {
-    userRecitations = await _prefs.then((SharedPreferences prefs) {
-      return prefs.getInt('userRecitations') ?? 108;
+  void getMantraSelected() async {
+    userMantra = await _prefs.then((SharedPreferences prefs) {
+      return prefs.getString('userMantra') ?? 'My Mantra';
     });
 
-    _recitations = userRecitations > 0 ? userRecitations : 108;
+  }
+
+  void setMantraSoundSelected(int selection, String soundPath) async {
+    final SharedPreferences prefs = await _prefs;
+    _mantraSoundSelected = selection;
+    _mantraSoundPath = soundPath;
+    _mantraSoundSelected =
+    await prefs.setInt('mantraSoundSelected', selection).then((bool success) {
+      return selection;
+    });
+    _mantraSoundPath =
+    await prefs.setString('mantraSoundPath', soundPath).then((bool success) {
+      return soundPath;
+    });
+
+    setMantraSoundSource();
+    loadMantra();
+  }
+
+  void getMantraSoundSelected() async {
+    _mantraSoundSelected = await _prefs.then((SharedPreferences prefs) {
+      return prefs.getInt('mantraSoundSelected') ?? -1;
+    });
+    _mantraSoundPath = await _prefs.then((SharedPreferences prefs) {
+      return prefs.getString('mantraSoundPath') ?? '';
+    });
+
+    setMantraSoundSource();
+    loadMantra();
+  }
+
+  void setMantraSoundSource () {
+    if (_mantraSoundSelected == -2) {
+      //URL
+    } else if (_mantraSoundSelected == -1) {
+      //File
+      _mantraSoundSource = DeviceFileSource(_mantraSoundPath);
+    } else {
+      _mantraSoundSource = AssetSource(mantraSoundAssetList[_mantraSoundSelected]);
+    }
+  }
+
+  void loadMantra() async {
+    await player.setSource(_mantraSoundSource);
+    mantraDuration = (await player.getDuration())!;
+    totalMantraDuration =
+        Duration(milliseconds: mantraDuration.inMilliseconds * _recitations);
+
+    setState(() {
+      mantraPosition = totalMantraDuration;
+    });
+
+    print('########## song Duration is $mantraDuration.');
   }
 
   Future getImage(ImageSource media, bool isGuru) async {
@@ -456,6 +535,106 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
+  void filePicker() async {
+    // final result = await FilePicker.platform.pickFiles();
+    // final path = result?.files.single.path;
+    // if (path != null) {
+    //   setMantraSoundSelected(-1, path);
+    // }
+  }
+
+  void mantraSoundDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            title: Text('Upload Mantra Sound'),
+            content: SizedBox(
+              height: MediaQuery.of(context).size.height,
+              width: double.maxFinite,
+              child: Column(
+                children: [
+                  Expanded(
+                    flex: 4,
+                    child: ListView.separated(
+                        itemBuilder: (BuildContext context, int index) {
+                          return ListTile(
+                            title: Text(
+                              mantraSoundList[index],
+                              style: const TextStyle(color: Colors.black),
+                              textScaleFactor:
+                              ScaleSize.textScaleFactor(context),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.pop(context);
+                              setMantraSoundSelected(index, '');
+                              mantraSoundAsset = mantraSoundAssetList[index];
+                              Fluttertoast.showToast(
+                                  msg: "Updated Mantra Sound",
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.BOTTOM,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.orangeAccent,
+                                  textColor: Colors.black,
+                                  fontSize: 16.0
+                              );
+                            },
+                          );
+                        },
+                        separatorBuilder: (BuildContext context, int index) =>
+                            Divider(
+                              color: Colors.grey[600],
+                            ),
+                        itemCount: mantraSoundList.length),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.width * 0.11,
+                          decoration: BoxDecoration(
+                            color: Colors.orangeAccent,
+                            borderRadius: BorderRadius.circular(32),
+                          ),
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: TextField(
+                                controller: mantraController,
+                                decoration: const InputDecoration.collapsed(
+                                  hintText: 'Add using URL',
+                                ),
+                                onEditingComplete: () {
+                                  Navigator.pop(context);
+                                  setMantraSelected(mantraController.text);
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      FloatingActionButton.small(
+                        onPressed: filePicker,
+                        tooltip: 'Add from file storage',
+                        child: Icon(
+                          Icons.file_upload,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
   void mantraDialog() {
     mantraController.clear();
     showDialog(
@@ -466,7 +645,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             title: Text('Select my mantra'),
             content: SizedBox(
-              height: MediaQuery.of(context).size.height / 2,
+              height: MediaQuery.of(context).size.height / 1.5,
               width: double.maxFinite,
               child: Column(
                 children: [
@@ -485,7 +664,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                             onTap: () {
                               Navigator.pop(context);
-                              setUserMantra(mantraList[index]);
+                              setMantraSelected(mantraList[index]);
                             },
                           );
                         },
@@ -515,15 +694,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                                 onEditingComplete: () {
                                   Navigator.pop(context);
-                                  setUserMantra(mantraController.text);
+                                  setMantraSelected(mantraController.text);
                                 },
                               ),
                             ),
                           ),
                         ),
                       ),
-                      const FloatingActionButton.small(
-                        onPressed: null,
+                      FloatingActionButton.small(
+                        onPressed: mantraSoundDialog,
                         tooltip: 'Upload mantra sound',
                         child: Icon(
                           Icons.music_note_rounded,
@@ -607,25 +786,8 @@ class _MyHomePageState extends State<MyHomePage> {
     if (isMantraPlay == false) {
       await player.pause();
     } else {
-      await player.play(AssetSource('sounds/SP3.mp3'));
+      await player.play(_mantraSoundSource);
     }
-  }
-
-  void loadMantra() async {
-    await player.setSource(AssetSource('sounds/SP3.mp3'));
-    mantraDuration = (await player.getDuration())!;
-    totalMantraDuration =
-        Duration(milliseconds: mantraDuration.inMilliseconds * _recitations);
-
-    userMantra = await _prefs.then((SharedPreferences prefs) {
-      return prefs.getString('userMantra') ?? 'My Mantra';
-    });
-
-    setState(() {
-      mantraPosition = totalMantraDuration;
-    });
-
-    print('########## song Duration is $mantraDuration.');
   }
 
   void getMantraDuration() async {
@@ -667,7 +829,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     getUserRecitations();
 
-    loadMantra();
+    getMantraSelected();
+    getMantraSoundSelected();
     //getMantraDuration();
 
     player.onDurationChanged.listen((Duration d) {
@@ -688,23 +851,22 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     player.onPlayerComplete.listen((event) {
-      setState(() async {
+      setState(() {
         mantraPosition = mantraDuration;
         if (_recitations == 1) {
           _recitations = userRecitations;
-          updateMantraDuration();
           player.stop();
           isMantraPlay = false;
         } else {
           _recitations--;
-          updateMantraDuration();
-          if (isMantraPlay == false) {
-            await player.pause();
-          } else {
-            await player.play(AssetSource('sounds/SP3.mp3'));
-          }
         }
+        updateMantraDuration();
       });
+      if (isMantraPlay == false) {
+        player.pause();
+      } else {
+        player.play(_mantraSoundSource);
+      }
     });
   }
 
