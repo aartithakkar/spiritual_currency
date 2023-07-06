@@ -71,7 +71,7 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   int _counts = 0;
   audioState selectedAudioState = audioState.unmute;
   int height = 180;
@@ -99,6 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final recitationController = TextEditingController();
   final mantraController = TextEditingController();
   final mantraSoundController = TextEditingController();
+  late TabController _tabController;
 
   // list of images
   List guruImgList = [
@@ -561,39 +562,88 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(
                 children: [
                   Expanded(
-                    flex: 4,
-                    child: ListView.separated(
-                        itemBuilder: (BuildContext context, int index) {
-                          return ListTile(
-                            title: Text(
-                              mantraSoundList[index],
-                              style: const TextStyle(color: Colors.black),
-                              textScaleFactor:
-                                  ScaleSize.textScaleFactor(context),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            onTap: () {
-                              Navigator.pop(context);
-                              Navigator.pop(context);
-                              setMantraSoundSelected(index, '');
-                              mantraSoundAsset = mantraSoundAssetList[index];
-                              Fluttertoast.showToast(
-                                  msg: "Updated Mantra Sound",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.orangeAccent,
-                                  textColor: Colors.black,
-                                  fontSize: 16.0);
+                    flex: 1,
+                    child: TabBar(
+                      controller: _tabController,
+                      tabs: const [
+                        Tab(child: Text('Mantra')),
+                        Tab(child: Text('Cureman Talks')),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 10,
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        ListView.separated(
+                            itemBuilder: (BuildContext context, int index) {
+                              return ListTile(
+                                title: Text(
+                                  mantraSoundList[index],
+                                  style: const TextStyle(color: Colors.black),
+                                  textScaleFactor:
+                                      ScaleSize.textScaleFactor(context),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                  setMantraSoundSelected(index, '');
+                                  mantraSoundAsset =
+                                      mantraSoundAssetList[index];
+                                  Fluttertoast.showToast(
+                                      msg: "Updated Mantra Sound",
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      gravity: ToastGravity.BOTTOM,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor: Colors.orangeAccent,
+                                      textColor: Colors.black,
+                                      fontSize: 16.0);
+                                },
+                              );
                             },
-                          );
-                        },
-                        separatorBuilder: (BuildContext context, int index) =>
-                            Divider(
-                              color: Colors.grey[600],
-                            ),
-                        itemCount: mantraSoundList.length),
+                            separatorBuilder:
+                                (BuildContext context, int index) => Divider(
+                                      color: Colors.grey[600],
+                                    ),
+                            itemCount: mantraSoundList.length),
+                        ListView.separated(
+                            itemBuilder: (BuildContext context, int index) {
+                              return ListTile(
+                                title: Text(
+                                  mantraSoundList[index],
+                                  style: const TextStyle(color: Colors.black),
+                                  textScaleFactor:
+                                      ScaleSize.textScaleFactor(context),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                  setMantraSoundSelected(index, '');
+                                  mantraSoundAsset =
+                                      mantraSoundAssetList[index];
+                                  Fluttertoast.showToast(
+                                      msg: "Updated Mantra Sound",
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      gravity: ToastGravity.BOTTOM,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor: Colors.orangeAccent,
+                                      textColor: Colors.black,
+                                      fontSize: 16.0);
+                                },
+                              );
+                            },
+                            separatorBuilder:
+                                (BuildContext context, int index) => Divider(
+                                      color: Colors.grey[600],
+                                    ),
+                            itemCount: mantraSoundList.length),
+                      ],
+                    ),
                   ),
                   Row(
                     children: [
@@ -835,6 +885,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
 
+    _tabController = TabController(length: 2, vsync: this);
+
     loadCounterState();
 
     _guruImageSelected = -1;
@@ -891,6 +943,10 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     // Clean up the controller when the widget is disposed.
     myController.dispose();
+    recitationController.dispose();
+    mantraController.dispose();
+    mantraSoundController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
