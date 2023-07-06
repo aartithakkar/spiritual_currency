@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -97,6 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final myController = TextEditingController();
   final recitationController = TextEditingController();
   final mantraController = TextEditingController();
+  final mantraSoundController = TextEditingController();
 
   // list of images
   List guruImgList = [
@@ -259,19 +261,20 @@ class _MyHomePageState extends State<MyHomePage> {
     userMantra = await _prefs.then((SharedPreferences prefs) {
       return prefs.getString('userMantra') ?? 'My Mantra';
     });
-
   }
 
   void setMantraSoundSelected(int selection, String soundPath) async {
     final SharedPreferences prefs = await _prefs;
     _mantraSoundSelected = selection;
     _mantraSoundPath = soundPath;
-    _mantraSoundSelected =
-    await prefs.setInt('mantraSoundSelected', selection).then((bool success) {
+    _mantraSoundSelected = await prefs
+        .setInt('mantraSoundSelected', selection)
+        .then((bool success) {
       return selection;
     });
-    _mantraSoundPath =
-    await prefs.setString('mantraSoundPath', soundPath).then((bool success) {
+    _mantraSoundPath = await prefs
+        .setString('mantraSoundPath', soundPath)
+        .then((bool success) {
       return soundPath;
     });
 
@@ -291,14 +294,15 @@ class _MyHomePageState extends State<MyHomePage> {
     loadMantra();
   }
 
-  void setMantraSoundSource () {
+  void setMantraSoundSource() {
     if (_mantraSoundSelected == -2) {
       //URL
     } else if (_mantraSoundSelected == -1) {
       //File
       _mantraSoundSource = DeviceFileSource(_mantraSoundPath);
     } else {
-      _mantraSoundSource = AssetSource(mantraSoundAssetList[_mantraSoundSelected]);
+      _mantraSoundSource =
+          AssetSource(mantraSoundAssetList[_mantraSoundSelected]);
     }
   }
 
@@ -331,7 +335,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void myAlert(bool isGuru) {
+  void guruLordDialog(bool isGuru) {
     myController.clear();
     showDialog(
         context: context,
@@ -536,11 +540,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void filePicker() async {
-    // final result = await FilePicker.platform.pickFiles();
-    // final path = result?.files.single.path;
-    // if (path != null) {
-    //   setMantraSoundSelected(-1, path);
-    // }
+    final result = await FilePicker.platform.pickFiles();
+    final path = result?.files.single.path;
+    if (path != null) {
+      setMantraSoundSelected(-1, path);
+    }
   }
 
   void mantraSoundDialog() {
@@ -549,7 +553,7 @@ class _MyHomePageState extends State<MyHomePage> {
         builder: (BuildContext context) {
           return AlertDialog(
             shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             title: Text('Upload Mantra Sound'),
             content: SizedBox(
               height: MediaQuery.of(context).size.height,
@@ -565,7 +569,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               mantraSoundList[index],
                               style: const TextStyle(color: Colors.black),
                               textScaleFactor:
-                              ScaleSize.textScaleFactor(context),
+                                  ScaleSize.textScaleFactor(context),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -581,8 +585,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   timeInSecForIosWeb: 1,
                                   backgroundColor: Colors.orangeAccent,
                                   textColor: Colors.black,
-                                  fontSize: 16.0
-                              );
+                                  fontSize: 16.0);
                             },
                           );
                         },
@@ -606,13 +609,15 @@ class _MyHomePageState extends State<MyHomePage> {
                             child: Padding(
                               padding: const EdgeInsets.only(left: 8.0),
                               child: TextField(
-                                controller: mantraController,
+                                controller: mantraSoundController,
                                 decoration: const InputDecoration.collapsed(
-                                  hintText: 'Add using URL',
+                                  hintText: 'Add using URL (coming soon)',
                                 ),
                                 onEditingComplete: () {
                                   Navigator.pop(context);
-                                  setMantraSelected(mantraController.text);
+                                  Navigator.pop(context);
+                                  setMantraSoundSelected(
+                                      -2, mantraController.text);
                                 },
                               ),
                             ),
@@ -620,7 +625,19 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                       FloatingActionButton.small(
-                        onPressed: filePicker,
+                        onPressed: () {
+                          filePicker();
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                          Fluttertoast.showToast(
+                              msg: "Updated Mantra Sound",
+                              toastLength: Toast.LENGTH_LONG,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.orangeAccent,
+                              textColor: Colors.black,
+                              fontSize: 16.0);
+                        },
                         tooltip: 'Add from file storage',
                         child: Icon(
                           Icons.file_upload,
@@ -903,7 +920,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     onPress: () {
                       setState(
                         () {
-                          myAlert(false);
+                          guruLordDialog(false);
                         },
                       );
                     },
@@ -923,7 +940,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Expanded(
                   child: ReusableCard(
                     onPress: () {
-                      myAlert(true);
+                      guruLordDialog(true);
                     },
                     cardChild: _guruImagePath == ''
                         ? (_guruImageSelected == -1
@@ -1110,8 +1127,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         IconButton(
                           onPressed: () {},
                           icon: Image.asset(
-                            'assets/icons/cureman_logo.png',
-                            color: Colors.black,
+                            'assets/icons/cureman_logo_5.png',
+                            //color: Colors.black,
                           ),
                         ),
                       ],
