@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
-import '../constants.dart';
+import '../common/constants.dart';
+
+class ImageData {
+  final String imagePath;
+  final String imageCaption;
+
+  ImageData(this.imagePath, this.imageCaption);
+}
 
 class ImageContent extends StatelessWidget {
   ImageContent({required this.displayImage, required this.label});

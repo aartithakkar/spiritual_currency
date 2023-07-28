@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constants.dart';
+import '../common/constants.dart';
 
 class ReusableCard extends StatelessWidget {
   ReusableCard({required this.cardChild, required this.onPress});
@@ -14,9 +14,9 @@ class ReusableCard extends StatelessWidget {
     return GestureDetector(
       onTap: onPress,
       child: Container(
-        child: cardChild,
-        margin: EdgeInsets.all(3.0),
+        margin: const EdgeInsets.all(3.0),
         decoration: kBoxDecoration,
+        child: cardChild,
       ),
     );
   }

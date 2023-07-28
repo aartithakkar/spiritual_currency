@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 const kActiveCardColour = Color(0xFF1D1E33);
@@ -25,3 +26,25 @@ BoxDecoration kBoxDecoration = BoxDecoration(
     ],
   ),
 );
+
+const List mantraAudioAssetList = [
+  'sounds/SP3.mp3',
+  'sounds/ShriKrishnaSharanamMama.mp3',
+  'sounds/SP3.mp3',
+];
+
+const List curemanTalksAssetList = [
+  'sounds/SP3.mp3',
+  'sounds/ShriKrishnaSharanamMama.mp3',
+  'sounds/SP3.mp3',
+];
+
+//late int mantraSoundSelected;
+//late String mantraSoundPath;
+//late Source mantraSoundSource;
+
+//Duration mantraDuration = const Duration(seconds: 0);
+//Duration totalMantraDuration = const Duration(seconds: 0);
+int recitations = 0;
+
+final mantraAudioController = TextEditingController();

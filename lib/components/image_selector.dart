@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constants.dart';
+import '../common/constants.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ImageSelector extends StatefulWidget {
