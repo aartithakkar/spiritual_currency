@@ -102,6 +102,21 @@ class _MyMantraAudio extends State<MyMantraAudio>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Select mantra audio'),
+        actions: [
+          IconButton(
+            tooltip: 'Add from file storage',
+            //if user click this button, user can upload image from gallery
+            onPressed: () async {
+              BuildContext myContext = context;
+              await filePicker(_tabController.index);
+              if (myContext.mounted) {
+                Navigator.pop(context, true);
+              }
+            },
+            //getImage(ImageSource.gallery, isGuru);
+            icon: const Icon(Icons.upload_file_sharp),
+          ),
+        ],
       ),
       body: SizedBox(
         height: MediaQuery.of(context).size.height,
@@ -247,19 +262,6 @@ class _MyMantraAudio extends State<MyMantraAudio>
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                  FloatingActionButton.small(
-                    onPressed: () async {
-                      BuildContext myContext = context;
-                      await filePicker(_tabController.index);
-                      if (myContext.mounted) {
-                        Navigator.pop(context, true);
-                      }
-                    },
-                    tooltip: 'Add from file storage',
-                    child: const Icon(
-                      Icons.file_upload,
                     ),
                   ),
                 ],
