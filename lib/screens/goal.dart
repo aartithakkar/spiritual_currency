@@ -31,38 +31,37 @@ class _MyGoal extends State<MyGoal> {
     goalTextController.clear();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Select my goal'),),
+      appBar: AppBar(
+        title: const Text('Select my goal'),
+        actions: [
+          IconButton(
+            //if user click this button, user can upload image from gallery
+            onPressed: () async {
+              BuildContext myContext = context;
+              var img = await picker.pickImage(source: ImageSource.gallery);
+              if (img != null) {
+                goalModel.goalImagePath = img.path;
+                goalModel.goalImageIndex = -1;
+                goalModel.goalText = '';
+                if (myContext.mounted) {
+                  Navigator.pop(context, true);
+                }
+              } else {
+                if (myContext.mounted) {
+                  //  Navigator.pop(context, false);
+                }
+              }
+              //getImage(ImageSource.gallery, isGuru);
+            },
+            icon: const Icon(Icons.image),
+          ),
+        ],
+      ),
       body: SizedBox(
         height: MediaQuery.of(context).size.height,
         width: double.maxFinite,
         child: Column(
           children: [
-            ElevatedButton(
-              //if user click this button, user can upload image from gallery
-              onPressed: () async {
-                BuildContext myContext = context;
-                var img = await picker.pickImage(source: ImageSource.gallery);
-                if (img != null) {
-                  goalModel.goalImagePath = img.path;
-                  goalModel.goalImageIndex = -1;
-                  goalModel.goalText = '';
-                  if(myContext.mounted) {
-                    Navigator.pop(context, true);
-                  }
-                } else {
-                  if(myContext.mounted) {
-                    Navigator.pop(context, false);
-                  }
-                }
-                //getImage(ImageSource.gallery, isGuru);
-              },
-              child: const Row(
-                children: [
-                  Icon(Icons.image),
-                  Text('From Gallery'),
-                ],
-              ),
-            ),
             Expanded(
               child: GestureDetector(
                 child: PageView(
@@ -72,8 +71,12 @@ class _MyGoal extends State<MyGoal> {
                       Center(
                         child: Column(
                           children: [
-                            Expanded(child: Image.asset(GoalModel.goalImgList[i].imagePath)),
-                            Expanded(child: Text(GoalModel.goalImgList[i].imageCaption)),
+                            Expanded(
+                                child: Image.asset(
+                                    GoalModel.goalImgList[i].imagePath)),
+                            Expanded(
+                                child: Text(
+                                    GoalModel.goalImgList[i].imageCaption)),
                           ],
                         ),
                       ),

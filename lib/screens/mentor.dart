@@ -29,37 +29,34 @@ class _MyMentor extends State<MyMentor> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Select my mentor'),
+        actions: [
+          IconButton(
+            //if user click this button, user can upload image from gallery
+            onPressed: () async {
+              BuildContext myContext = context;
+              var img = await picker.pickImage(source: ImageSource.gallery);
+              if (img != null) {
+                mentorModel.mentorImagePath = img.path;
+                mentorModel.mentorImageIndex = -1;
+                if (myContext.mounted) {
+                  Navigator.pop(context, true);
+                }
+              } else {
+                if (myContext.mounted) {
+                  //  Navigator.pop(context, false);
+                }
+              }
+              //getImage(ImageSource.gallery, isGuru);
+            },
+            icon: const Icon(Icons.image),
+          ),
+        ],
       ),
       body: SizedBox(
         height: MediaQuery.of(context).size.height,
         width: double.maxFinite,
         child: Column(
           children: [
-            ElevatedButton(
-              //if user click this button, user can upload image from gallery
-              onPressed: () async {
-                BuildContext myContext = context;
-                var img = await picker.pickImage(source: ImageSource.gallery);
-                if (img != null) {
-                  mentorModel.mentorImagePath = img.path;
-                  mentorModel.mentorImageIndex = -1;
-                  if(myContext.mounted) {
-                    Navigator.pop(context, true);
-                  }
-                } else {
-                  if(myContext.mounted) {
-                    Navigator.pop(context, false);
-                  }
-                }
-                //getImage(ImageSource.gallery, isGuru);
-              },
-              child: const Row(
-                children: [
-                  Icon(Icons.image),
-                  Text('From Gallery'),
-                ],
-              ),
-            ),
             Expanded(
               child: GestureDetector(
                 child: PageView(
@@ -69,23 +66,27 @@ class _MyMentor extends State<MyMentor> {
                       Center(
                         child: Column(
                           children: [
-                            Expanded(child: Image.asset(MentorModel.mentorImgList[i].imagePath)),
-                            Expanded(child: Text(MentorModel.mentorImgList[i].imageCaption)),
+                            Expanded(
+                                child: Image.asset(
+                                    MentorModel.mentorImgList[i].imagePath)),
+                            Expanded(
+                                child: Text(
+                                    MentorModel.mentorImgList[i].imageCaption)),
                           ],
                         ),
                       ),
                   ],
                   onPageChanged: (index) {
-                   // setState(() {
-                      pageChanged = index;
-                   // });
+                    // setState(() {
+                    pageChanged = index;
+                    // });
                   },
                 ),
                 onTap: () {
                   //add set state if doesn't get detected on each press
-                    Navigator.pop(context, true);
-                    mentorModel.mentorImageIndex = pageChanged;
-                    mentorModel.mentorImagePath = '';
+                  Navigator.pop(context, true);
+                  mentorModel.mentorImageIndex = pageChanged;
+                  mentorModel.mentorImagePath = '';
                 },
               ),
             ),

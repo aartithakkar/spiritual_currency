@@ -25,7 +25,9 @@ class _MyMantra extends State<MyMantra> {
   Widget build(BuildContext context) {
     mantraModel = Provider.of<MantraModel>(context, listen: false);
     return Scaffold(
-      appBar: AppBar(title: const Text('Select my mantra'),),
+      appBar: AppBar(
+        title: const Text('Select my mantra'),
+      ),
       body: Center(
         child: Container(
           padding: const EdgeInsets.all(10.0),
@@ -39,14 +41,14 @@ class _MyMantra extends State<MyMantra> {
                         title: Text(
                           MantraModel.mantraList[index],
                           style: const TextStyle(color: Colors.black),
-                          textScaleFactor:
-                          ScaleSize.textScaleFactor(context),
+                          textScaleFactor: ScaleSize.textScaleFactor(context),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         onTap: () {
                           Navigator.pop(context);
-                          mantraModel.selectMantra(MantraModel.mantraList[index]);
+                          mantraModel
+                              .selectMantra(MantraModel.mantraList[index]);
                         },
                       );
                     },

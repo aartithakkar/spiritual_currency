@@ -22,7 +22,7 @@ import 'package:spiritual_currency/screens/login.dart';
 import 'package:spiritual_currency/screens/home.dart';
 
 void main() {
-  runApp(const MyApp());//const MyApp());
+  runApp(const MyApp()); //const MyApp());
 }
 
 GoRouter router() {
@@ -69,20 +69,14 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MultiProvider (
+    return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-            create: (context) => HomeModel()),
-        ChangeNotifierProvider(
-            create: (context) => GoalModel()),
-        ChangeNotifierProvider(
-            create: (context) => MentorModel()),
-        ChangeNotifierProvider(
-            create: (context) => MantraModel()),
-        ChangeNotifierProvider(
-            create: (context) => MantraAudioModel()),
-        ChangeNotifierProvider(
-            create: (context) => RepetitionModel()),
+        ChangeNotifierProvider(create: (context) => HomeModel()),
+        ChangeNotifierProvider(create: (context) => GoalModel()),
+        ChangeNotifierProvider(create: (context) => MentorModel()),
+        ChangeNotifierProvider(create: (context) => MantraModel()),
+        ChangeNotifierProvider(create: (context) => MantraAudioModel()),
+        ChangeNotifierProvider(create: (context) => RepetitionModel()),
       ],
       child: MaterialApp.router(
         title: 'Cureman',

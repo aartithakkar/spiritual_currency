@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -61,8 +60,10 @@ class _MyHomePageState extends State<MyHomePage> {
   String mentorImageAsset = '';
   String goalImageAsset = '';
 
-  ImageProvider mentorImageProvider = const AssetImage('assets/graphics/Blank.jpeg');
-  ImageProvider goalImageProvider = const AssetImage('assets/graphics/Blank.jpeg');
+  ImageProvider mentorImageProvider =
+      const AssetImage('assets/graphics/Blank.jpeg');
+  ImageProvider goalImageProvider =
+      const AssetImage('assets/graphics/Blank.jpeg');
   String mentorText = 'Find my     Guru/Mentor';
 
   late MantraModel mantraModel;
@@ -159,7 +160,8 @@ class _MyHomePageState extends State<MyHomePage> {
     await mentorModel.loadMentorImagePath();
 
     if (mentorModel.mentorImageIndex != -1) {
-      mentorImageAsset = MentorModel.mentorImgList[mentorModel.mentorImageIndex].imagePath;
+      mentorImageAsset =
+          MentorModel.mentorImgList[mentorModel.mentorImageIndex].imagePath;
       mentorImageProvider = AssetImage(mentorImageAsset);
       mentorText = '';
     } else if (mentorModel.mentorImagePath != '') {
@@ -174,7 +176,8 @@ class _MyHomePageState extends State<MyHomePage> {
     await mentorModel.saveMentorImagePath(mentorModel.mentorImagePath);
 
     if (mentorModel.mentorImageIndex != -1) {
-      mentorImageAsset = MentorModel.mentorImgList[mentorModel.mentorImageIndex].imagePath;
+      mentorImageAsset =
+          MentorModel.mentorImgList[mentorModel.mentorImageIndex].imagePath;
       setState(() {
         mentorImageProvider = AssetImage(mentorImageAsset);
         mentorText = '';
@@ -202,7 +205,8 @@ class _MyHomePageState extends State<MyHomePage> {
       goalImage = File(goalModel.goalImagePath);
       goalImageProvider = FileImage(goalImage!);
     } else {
-      goalImageAsset = GoalModel.goalImgList[goalModel.goalImageIndex].imagePath;
+      goalImageAsset =
+          GoalModel.goalImgList[goalModel.goalImageIndex].imagePath;
       goalImageProvider = AssetImage(goalImageAsset);
     }
   }
@@ -225,7 +229,8 @@ class _MyHomePageState extends State<MyHomePage> {
         goalImageProvider = FileImage(goalImage!);
       });
     } else {
-      goalImageAsset = GoalModel.goalImgList[goalModel.goalImageIndex].imagePath;
+      goalImageAsset =
+          GoalModel.goalImgList[goalModel.goalImageIndex].imagePath;
       setState(() {
         goalImageProvider = AssetImage(goalImageAsset);
       });
@@ -237,12 +242,10 @@ class _MyHomePageState extends State<MyHomePage> {
       //URL
     } else if (homeModel.mantraAudioIndex == -1) {
       //File
-        _mantraAudioSource = DeviceFileSource(homeModel.mantraAudioPath);
-
+      _mantraAudioSource = DeviceFileSource(homeModel.mantraAudioPath);
     } else {
-        _mantraAudioSource =
-            AssetSource(mantraAudioAssetList[homeModel.mantraAudioIndex]);
-
+      _mantraAudioSource =
+          AssetSource(mantraAudioAssetList[homeModel.mantraAudioIndex]);
     }
 
     await mantraAudioPlayer.setSource(_mantraAudioSource);
@@ -251,7 +254,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _mantraDuration = mantraDur;
     _totalMantraDuration = mantraDur * repetitionModel.remainingRepetitions;
 
-    if(isMantraPlay == true) {
+    if (isMantraPlay == true) {
       isMantraPlay = false;
     }
     setState(() {
@@ -260,7 +263,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void setupMantraPlayer() async {
-
     await homeModel.loadMantraAudioIndex();
     await homeModel.loadMantraPath();
 
@@ -350,11 +352,33 @@ class _MyHomePageState extends State<MyHomePage> {
     homeModel = Provider.of<HomeModel>(context);
     return Scaffold(
       appBar: AppBar(
-          // Here we take the value from the MyHomePage object that was created by
-          // the App.build method, and use it to set our appbar title.
-          //title: Text(widget.title),
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        //title: Text(widget.title),
         title: const Text('Cureman'),
+        actions: [
+          IconButton(
+            //if user click this button, user can upload image from gallery
+            onPressed: () async {
+              if (isMantraPlay == true) {
+                mantraAudioPlayer.pause();
+              }
+              bool? result = await context.push('/home/mantraAudio');
+              if (result != null && result) {
+                await homeModel
+                    .saveMantraAudioIndex(homeModel.mantraAudioIndex);
+                await homeModel.saveMantraPath(homeModel.mantraAudioPath);
+                updateMantraPlayer();
+              } else {
+                if (isMantraPlay == true) {
+                  mantraAudioPlayer.resume();
+                }
+              }
+            },
+            icon: const Icon(Icons.my_library_music_sharp),
           ),
+        ],
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -370,7 +394,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       }
                     },
                     cardChild: ImageContent(
-                            displayImage: goalImageProvider, label: _goalText),
+                        displayImage: goalImageProvider, label: _goalText),
                   ),
                 ),
                 Expanded(
@@ -382,7 +406,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       }
                     },
                     cardChild: ImageContent(
-                            displayImage: mentorImageProvider, label: mentorText),
+                        displayImage: mentorImageProvider, label: mentorText),
                   ),
                 ),
               ],
@@ -476,10 +500,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                   if (isMantraPlay == true) {
                                     mantraAudioPlayer.pause();
                                   }
-                                  bool? result = await context.push('/home/mantraAudio');
+                                  bool? result =
+                                      await context.push('/home/mantraAudio');
                                   if (result != null && result) {
-                                    await homeModel.saveMantraAudioIndex(homeModel.mantraAudioIndex);
-                                    await homeModel.saveMantraPath(homeModel.mantraAudioPath);
+                                    await homeModel.saveMantraAudioIndex(
+                                        homeModel.mantraAudioIndex);
+                                    await homeModel.saveMantraPath(
+                                        homeModel.mantraAudioPath);
                                     updateMantraPlayer();
                                   } else {
                                     if (isMantraPlay == true) {
@@ -521,11 +548,18 @@ class _MyHomePageState extends State<MyHomePage> {
                                         ),
                                       ),
                                       onPressed: () async {
-                                        bool? result = await context.push('/home/repetition');
+                                        bool? result = await context
+                                            .push('/home/repetition');
                                         if (result != null && result) {
                                           setState(() {
-                                            _totalMantraDuration = _mantraDuration * repetitionModel.remainingRepetitions;
-                                            _mantraAudioPosition = _mantraDuration * repetitionModel.remainingRepetitions;
+                                            _totalMantraDuration =
+                                                _mantraDuration *
+                                                    repetitionModel
+                                                        .remainingRepetitions;
+                                            _mantraAudioPosition =
+                                                _mantraDuration *
+                                                    repetitionModel
+                                                        .remainingRepetitions;
                                           });
                                         }
                                       },
@@ -570,11 +604,14 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                         TextButton(
                           onPressed: () async {
-                            bool? result = await context.push('/home/repetition');
+                            bool? result =
+                                await context.push('/home/repetition');
                             if (result != null && result) {
                               setState(() {
-                                _totalMantraDuration = _mantraDuration * repetitionModel.remainingRepetitions;
-                                _mantraAudioPosition = _mantraDuration * repetitionModel.remainingRepetitions;
+                                _totalMantraDuration = _mantraDuration *
+                                    repetitionModel.remainingRepetitions;
+                                _mantraAudioPosition = _mantraDuration *
+                                    repetitionModel.remainingRepetitions;
                               });
                             }
                           },

@@ -26,7 +26,9 @@ class _MyRepetition extends State<MyRepetition> {
   Widget build(BuildContext context) {
     repetitionModel = Provider.of<RepetitionModel>(context, listen: false);
     return Scaffold(
-      appBar: AppBar(title: const Text('Select my repetitions'),),
+      appBar: AppBar(
+        title: const Text('Select my repetitions'),
+      ),
       body: Center(
         child: Container(
           padding: const EdgeInsets.all(80.0),
@@ -40,14 +42,14 @@ class _MyRepetition extends State<MyRepetition> {
                         title: Text(
                           RepetitionModel.repList[index].toString(),
                           style: const TextStyle(color: Colors.black),
-                          textScaleFactor:
-                          ScaleSize.textScaleFactor(context),
+                          textScaleFactor: ScaleSize.textScaleFactor(context),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         onTap: () {
                           Navigator.pop(context, true);
-                          repetitionModel.selectRepetitions(RepetitionModel.repList[index]);
+                          repetitionModel.selectRepetitions(
+                              RepetitionModel.repList[index]);
                         },
                       );
                     },
@@ -80,8 +82,11 @@ class _MyRepetition extends State<MyRepetition> {
                               hintText: 'Type my repetition',
                             ),
                             onEditingComplete: () {
-                              int recitations = int.parse(repetitionController.text);
-                              recitations = recitations > 0 ? (recitations > 99999 ? 99999 : recitations) : 108;
+                              int recitations =
+                                  int.parse(repetitionController.text);
+                              recitations = recitations > 0
+                                  ? (recitations > 99999 ? 99999 : recitations)
+                                  : 108;
                               Navigator.pop(context, true);
                               repetitionModel.selectRepetitions(recitations);
                             },
