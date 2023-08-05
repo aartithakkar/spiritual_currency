@@ -9,7 +9,6 @@ import 'package:spiritual_currency/models/repetition.dart';
 
 import '../common/constants.dart';
 import '../common/scale_size.dart';
-import '../set_user_variables.dart';
 
 class MyMantraAudio extends StatefulWidget {
   const MyMantraAudio({super.key});
@@ -39,7 +38,7 @@ class _MyMantraAudio extends State<MyMantraAudio>
       homeModel.mantraAudioPath = path;
       homeModel.mantraAudioIndex = -1;
     } else {
-      UserSelectedVariables.addCuremanTalksSelected(path);
+
     }
   }
 
