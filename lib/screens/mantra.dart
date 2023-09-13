@@ -25,8 +25,19 @@ class _MyMantra extends State<MyMantra> {
   Widget build(BuildContext context) {
     mantraModel = Provider.of<MantraModel>(context, listen: false);
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text('Select my mantra'),
+        actions: [
+          IconButton(
+            //if user click this button, user can enter text based goal
+            tooltip: 'Type my mantra',
+            onPressed: () {
+              _openInputDialog(context);
+            },
+            icon: const Icon(Icons.keyboard_rounded),
+          ),
+        ],
       ),
       body: Center(
         child: Container(
@@ -58,39 +69,50 @@ class _MyMantra extends State<MyMantra> {
                         ),
                     itemCount: MantraModel.mantraList.length),
               ),
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.width * 0.11,
-                      decoration: BoxDecoration(
-                        color: Colors.orangeAccent,
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: TextField(
-                            controller: mantraController,
-                            decoration: const InputDecoration.collapsed(
-                              hintText: 'Type my mantra',
-                            ),
-                            onEditingComplete: () {
-                              Navigator.pop(context);
-                              mantraModel.selectMantra(mantraController.text);
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _openInputDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          content: TextField(
+              controller: mantraController,
+              autofocus: true,
+              decoration: const InputDecoration(hintText: 'Type my mantra'),
+              onEditingComplete: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+                mantraModel.selectMantra(mantraController.text);
+                mantraController.clear();
+              }),
+          actions: [
+            TextButton(
+              onPressed: () {
+                mantraController.clear();
+                Navigator.pop(context); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Handle the entered text here
+                Navigator.pop(context);
+                Navigator.pop(context);
+                mantraModel.selectMantra(mantraController.text);
+                mantraController.clear();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+    FocusScope.of(context).requestFocus(FocusNode());
   }
 }

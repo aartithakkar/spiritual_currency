@@ -12,9 +12,8 @@ class MantraModel extends ChangeNotifier {
 
   Future<void> saveSelectedMantra(String mantra) async {
     final prefs = await SharedPreferences.getInstance();
-    selectedMantra = await prefs
-        .setString('selectedMantra', mantra)
-        .then((bool success) {
+    selectedMantra =
+        await prefs.setString('selectedMantra', mantra).then((bool success) {
       return mantra;
     });
   }
@@ -26,6 +25,9 @@ class MantraModel extends ChangeNotifier {
   }
 
   void selectMantra(String mantra) {
+    if (mantra == '') {
+      return;
+    }
     saveSelectedMantra(mantra);
 
     selectedMantra = mantra;
