@@ -1,7 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:spiritual_currency/models/home.dart';
 import 'package:spiritual_currency/models/mantra_audio.dart';
@@ -25,7 +24,6 @@ class _MyMantraAudio extends State<MyMantraAudio>
   late HomeModel homeModel;
   int mantraAudioPreviewIndex = -1;
   final previewPlayer = AudioPlayer();
-  final String _mantraAudioTextHint = 'Set using URL (coming soon)';
 
   static const List _mantraAudioList = [
     'ACBSP Hare Krishna Mantra',
@@ -37,9 +35,7 @@ class _MyMantraAudio extends State<MyMantraAudio>
     if (tab == 0) {
       homeModel.mantraAudioPath = path;
       homeModel.mantraAudioIndex = -1;
-    } else {
-
-    }
+    } else {}
   }
 
   Future<void> filePicker(int tab) async {
@@ -99,9 +95,16 @@ class _MyMantraAudio extends State<MyMantraAudio>
   Widget build(BuildContext context) {
     mantraAudioModel = Provider.of<MantraAudioModel>(context);
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text('Select mantra audio'),
         actions: [
+          IconButton(
+            //if user click this button, user can enter text based goal
+            tooltip: 'Add using URL (coming soon)',
+            onPressed: () {},
+            icon: const Icon(Icons.keyboard_rounded),
+          ),
           IconButton(
             tooltip: 'Add from file storage',
             //if user click this button, user can upload image from gallery
@@ -224,45 +227,6 @@ class _MyMantraAudio extends State<MyMantraAudio>
                             color: Colors.grey[600],
                           ),
                       itemCount: _mantraAudioList.length),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.width * 0.11,
-                      decoration: BoxDecoration(
-                        color: Colors.orangeAccent,
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: TextField(
-                            controller: mantraAudioController,
-                            decoration: InputDecoration.collapsed(
-                              hintText: _mantraAudioTextHint,
-                            ),
-                            onEditingComplete: () {
-                              // Navigator.pop(context, true);
-                              // if (_tabController.index == 0) {
-                              //   homeModel.mantraAudioIndex = -2;
-                              //   homeModel.mantraAudioPath = mantraAudioController.text;
-                              // } else {
-                              //   UserSelectedVariables
-                              //       .addCuremanTalksSelected(
-                              //       mantraAudioController.text);
-                              // }
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
