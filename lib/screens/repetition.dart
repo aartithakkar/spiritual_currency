@@ -26,8 +26,19 @@ class _MyRepetition extends State<MyRepetition> {
   Widget build(BuildContext context) {
     repetitionModel = Provider.of<RepetitionModel>(context, listen: false);
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text('Select my repetitions'),
+        actions: [
+          IconButton(
+            //if user click this button, user can enter text based goal
+            tooltip: 'Type my repetition',
+            onPressed: () {
+              _openInputDialog(context);
+            },
+            icon: const Icon(Icons.keyboard_rounded),
+          ),
+        ],
       ),
       body: Center(
         child: Container(
@@ -59,48 +70,69 @@ class _MyRepetition extends State<MyRepetition> {
                         ),
                     itemCount: RepetitionModel.repList.length),
               ),
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.width * 0.11,
-                      decoration: BoxDecoration(
-                        color: Colors.orangeAccent,
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: TextField(
-                            controller: repetitionController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
-                            decoration: const InputDecoration.collapsed(
-                              hintText: 'Type my repetition',
-                            ),
-                            onEditingComplete: () {
-                              int recitations =
-                                  int.parse(repetitionController.text);
-                              recitations = recitations > 0
-                                  ? (recitations > 99999 ? 99999 : recitations)
-                                  : 108;
-                              Navigator.pop(context, true);
-                              repetitionModel.selectRepetitions(recitations);
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _openInputDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          content: TextField(
+            controller: repetitionController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            autofocus: true,
+            decoration: const InputDecoration(hintText: 'Type my repetition'),
+            onEditingComplete: () {
+              if (repetitionController.text != '') {
+                int recitations = int.parse(repetitionController.text);
+                recitations = recitations > 0
+                    ? (recitations > 99999 ? 99999 : recitations)
+                    : 108;
+                Navigator.pop(context);
+                Navigator.pop(context, true);
+                repetitionModel.selectRepetitions(recitations);
+                repetitionController.clear();
+              } else {
+                Navigator.pop(context);
+              }
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                repetitionController.clear();
+                Navigator.pop(context); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Handle the entered text here
+                if (repetitionController.text != '') {
+                  int recitations = int.parse(repetitionController.text);
+                  recitations = recitations > 0
+                      ? (recitations > 99999 ? 99999 : recitations)
+                      : 108;
+                  Navigator.pop(context);
+                  Navigator.pop(context, true);
+                  repetitionModel.selectRepetitions(recitations);
+                  repetitionController.clear();
+                } else {
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+    FocusScope.of(context).requestFocus(FocusNode());
   }
 }
