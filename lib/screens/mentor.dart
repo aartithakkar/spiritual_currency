@@ -3,6 +3,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:spiritual_currency/models/mentor.dart';
 
+import '../components/image_content.dart';
+
 class MyMentor extends StatefulWidget {
   const MyMentor({super.key});
 
@@ -52,9 +54,8 @@ class _MyMentor extends State<MyMentor> {
           ),
         ],
       ),
-      body: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        width: double.maxFinite,
+      body: Container(
+        padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
             Expanded(
@@ -67,8 +68,16 @@ class _MyMentor extends State<MyMentor> {
                         child: Column(
                           children: [
                             Expanded(
-                                child: Image.asset(
-                                    MentorModel.mentorImgList[i].imagePath)),
+                              child: SizedBox(
+                                height: MediaQuery.of(context).size.width,
+                                width:
+                                    MediaQuery.of(context).size.width * 9 / 14,
+                                child: ImageContent(
+                                    displayImage: AssetImage(
+                                        MentorModel.mentorImgList[i].imagePath),
+                                    label: ''),
+                              ),
+                            ),
                             Expanded(
                                 child: Text(
                                     MentorModel.mentorImgList[i].imageCaption)),
