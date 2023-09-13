@@ -9,7 +9,8 @@ class ImageData {
 }
 
 class ImageContent extends StatelessWidget {
-  ImageContent({required this.displayImage, required this.label});
+  const ImageContent(
+      {super.key, required this.displayImage, required this.label});
 
   final ImageProvider displayImage;
   final String label;

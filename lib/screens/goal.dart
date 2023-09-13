@@ -3,6 +3,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:spiritual_currency/models/goal.dart';
 
+import '../components/image_content.dart';
+
 class MyGoal extends StatefulWidget {
   const MyGoal({super.key});
 
@@ -31,10 +33,20 @@ class _MyGoal extends State<MyGoal> {
     goalTextController.clear();
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text('Select my goal'),
         actions: [
           IconButton(
+            //if user click this button, user can enter text based goal
+            tooltip: 'Type my goal',
+            onPressed: () {
+              _openInputDialog(context);
+            },
+            icon: const Icon(Icons.keyboard_rounded),
+          ),
+          IconButton(
+            tooltip: 'Open photo gallery',
             //if user click this button, user can upload image from gallery
             onPressed: () async {
               BuildContext myContext = context;
@@ -51,15 +63,13 @@ class _MyGoal extends State<MyGoal> {
                   //  Navigator.pop(context, false);
                 }
               }
-              //getImage(ImageSource.gallery, isGuru);
             },
             icon: const Icon(Icons.image),
           ),
         ],
       ),
-      body: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        width: double.maxFinite,
+      body: Container(
+        padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
             Expanded(
@@ -72,19 +82,26 @@ class _MyGoal extends State<MyGoal> {
                         child: Column(
                           children: [
                             Expanded(
-                                child: Image.asset(
-                                    GoalModel.goalImgList[i].imagePath)),
+                              child: SizedBox(
+                                height: MediaQuery.of(context).size.width,
+                                width:
+                                    MediaQuery.of(context).size.width * 9 / 14,
+                                child: ImageContent(
+                                    displayImage: AssetImage(
+                                        GoalModel.goalImgList[i].imagePath),
+                                    label: ''),
+                              ),
+                            ),
                             Expanded(
-                                child: Text(
-                                    GoalModel.goalImgList[i].imageCaption)),
+                              child:
+                                  Text(GoalModel.goalImgList[i].imageCaption),
+                            ),
                           ],
                         ),
                       ),
                   ],
                   onPageChanged: (index) {
-                    // setState(() {
                     pageChanged = index;
-                    // });
                   },
                 ),
                 onTap: () {
@@ -96,40 +113,61 @@ class _MyGoal extends State<MyGoal> {
                 },
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.orangeAccent,
-                  borderRadius: BorderRadius.circular(32),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    controller: goalTextController,
-                    decoration: const InputDecoration.collapsed(
-                      hintText: 'Type my goal',
-                    ),
-                    onEditingComplete: () {
-                      if (goalTextController.text != '') {
-                        Navigator.pop(context, true);
-                        goalModel.goalImageIndex = -2;
-                        goalModel.goalImagePath = '';
-                        goalModel.goalText = goalTextController.text;
-                      } else {
-                        Navigator.pop(context, false);
-                      }
-                      //goalText = myController.text;
-                      //lordImage = null;
-                      //lordImageSelected = -1;
-                    },
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
     );
+  }
+
+  void _openInputDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          content: TextField(
+              controller: goalTextController,
+              autofocus: true,
+              decoration: const InputDecoration(hintText: 'Type my goal'),
+              onEditingComplete: () {
+                if (goalTextController.text != '') {
+                  Navigator.pop(context);
+                  Navigator.pop(context, true);
+                  goalModel.goalImageIndex = -2;
+                  goalModel.goalImagePath = '';
+                  goalModel.goalText = goalTextController.text;
+                  goalTextController.clear();
+                } else {
+                  Navigator.pop(context);
+                }
+              }),
+          actions: [
+            TextButton(
+              onPressed: () {
+                goalTextController.clear();
+                Navigator.pop(context); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Handle the entered text here
+                if (goalTextController.text != '') {
+                  Navigator.pop(context);
+                  Navigator.pop(context, true);
+                  goalModel.goalImageIndex = -2;
+                  goalModel.goalImagePath = '';
+                  goalModel.goalText = goalTextController.text;
+                  goalTextController.clear();
+                } else {
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+    FocusScope.of(context).requestFocus(FocusNode());
   }
 }
