@@ -2,9 +2,9 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:spiritual_currency/models/home.dart';
-import 'package:spiritual_currency/models/mantra_audio.dart';
-import 'package:spiritual_currency/models/repetition.dart';
+import 'package:cureman/models/home.dart';
+import 'package:cureman/models/mantra_audio.dart';
+import 'package:cureman/models/repetition.dart';
 
 import '../common/constants.dart';
 import '../common/scale_size.dart';

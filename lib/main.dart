@@ -5,21 +5,21 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spiritual_currency/models/home.dart';
+import 'package:cureman/models/home.dart';
 
 import 'common/theme.dart';
-import 'package:spiritual_currency/models/goal.dart';
-import 'package:spiritual_currency/models/mantra.dart';
-import 'package:spiritual_currency/models/mantra_audio.dart';
-import 'package:spiritual_currency/models/mentor.dart';
-import 'package:spiritual_currency/models/repetition.dart';
-import 'package:spiritual_currency/screens/goal.dart';
-import 'package:spiritual_currency/screens/mantra.dart';
-import 'package:spiritual_currency/screens/mantra_audio.dart';
-import 'package:spiritual_currency/screens/mentor.dart';
-import 'package:spiritual_currency/screens/repetition.dart';
-import 'package:spiritual_currency/screens/login.dart';
-import 'package:spiritual_currency/screens/home.dart';
+import 'package:cureman/models/goal.dart';
+import 'package:cureman/models/mantra.dart';
+import 'package:cureman/models/mantra_audio.dart';
+import 'package:cureman/models/mentor.dart';
+import 'package:cureman/models/repetition.dart';
+import 'package:cureman/screens/goal.dart';
+import 'package:cureman/screens/mantra.dart';
+import 'package:cureman/screens/mantra_audio.dart';
+import 'package:cureman/screens/mentor.dart';
+import 'package:cureman/screens/repetition.dart';
+import 'package:cureman/screens/login.dart';
+import 'package:cureman/screens/home.dart';
 
 void main() {
   runApp(const MyApp()); //const MyApp());

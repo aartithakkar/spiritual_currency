@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:spiritual_currency/models/goal.dart';
+import 'package:cureman/models/goal.dart';
 
 import '../components/image_content.dart';
 

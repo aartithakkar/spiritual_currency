@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spiritual_currency/components/image_content.dart';
+import 'package:cureman/components/image_content.dart';
 
 
 class MentorModel extends ChangeNotifier {

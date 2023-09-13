@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:spiritual_currency/models/repetition.dart';
+import 'package:cureman/models/repetition.dart';
 
 import '../common/scale_size.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:spiritual_currency/models/mantra.dart';
+import 'package:cureman/models/mantra.dart';
 
 import '../common/scale_size.dart';
 

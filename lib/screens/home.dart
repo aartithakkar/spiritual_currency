@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spiritual_currency/models/mentor.dart';
+import 'package:cureman/models/mentor.dart';
 
 import '../common/constants.dart';
 import '../components/image_content.dart';

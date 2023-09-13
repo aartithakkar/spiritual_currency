@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.spiritual_currency">
    <application
-        android:label="spiritual_currency"
+        android:label="Cureman"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity
