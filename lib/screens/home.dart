@@ -356,6 +356,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         //title: Text(widget.title),
         title: const Text('Cureman'),
+        backgroundColor: const Color(0xFFFDB777),
         actions: [
           IconButton(
             //if user click this button, user can upload image from gallery
@@ -516,6 +517,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 },
                                 child: FloatingActionButton.small(
                                   onPressed: playPauseMantra,
+                                  backgroundColor: Colors.orange,
                                   //tooltip: 'Long press to modify mantra audio',
                                   child: isMantraPlay == true
                                       ? const Icon(Icons.pause)
