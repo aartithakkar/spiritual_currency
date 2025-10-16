@@ -364,7 +364,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 mantraAudioPlayer.pause();
               }
               bool? result = await context.push('/home/mantraAudio');
-              if (result != null && result) {
+              if (result == true) {
                 await homeModel
                     .saveMantraAudioIndex(homeModel.mantraAudioIndex);
                 await homeModel.saveMantraPath(homeModel.mantraAudioPath);
@@ -389,7 +389,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: ReusableCard(
                     onPress: () async {
                       bool? result = await context.push('/home/goal');
-                      if (result != null && result) {
+                      if (result == true) {
                         updateGoal();
                       }
                     },
@@ -401,7 +401,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: ReusableCard(
                     onPress: () async {
                       bool? result = await context.push('/home/mentor');
-                      if (result != null && result) {
+                      if (result == true) {
                         updateMentor();
                       }
                     },
@@ -502,7 +502,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   }
                                   bool? result =
                                       await context.push('/home/mantraAudio');
-                                  if (result != null && result) {
+                                  if (result == true) {
                                     await homeModel.saveMantraAudioIndex(
                                         homeModel.mantraAudioIndex);
                                     await homeModel.saveMantraPath(
@@ -550,7 +550,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       onPressed: () async {
                                         bool? result = await context
                                             .push('/home/repetition');
-                                        if (result != null && result) {
+                                        if (result == true) {
                                           setState(() {
                                             _totalMantraDuration =
                                                 _mantraDuration *
@@ -606,7 +606,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           onPressed: () async {
                             bool? result =
                                 await context.push('/home/repetition');
-                            if (result != null && result) {
+                            if (result == true) {
                               setState(() {
                                 _totalMantraDuration = _mantraDuration *
                                     repetitionModel.remainingRepetitions;
