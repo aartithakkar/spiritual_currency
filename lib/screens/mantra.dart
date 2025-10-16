@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:cureman/models/mantra.dart';
 
@@ -57,9 +58,8 @@ class _MyMantra extends State<MyMantra> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         onTap: () {
-                          Navigator.pop(context);
-                          mantraModel
-                              .selectMantra(MantraModel.mantraList[index]);
+                          _handleMantraSelection(
+                              context, MantraModel.mantraList[index]);
                         },
                       );
                     },
@@ -86,25 +86,23 @@ class _MyMantra extends State<MyMantra> {
               autofocus: true,
               decoration: const InputDecoration(hintText: 'Type my mantra'),
               onEditingComplete: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
-                mantraModel.selectMantra(mantraController.text);
+                Navigator.of(dialogContext).pop();
+                _handleMantraSelection(context, mantraController.text);
                 mantraController.clear();
               }),
           actions: [
             TextButton(
               onPressed: () {
                 mantraController.clear();
-                Navigator.pop(context); // Close the dialog
+                Navigator.of(dialogContext).pop(); // Close the dialog
               },
               child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 // Handle the entered text here
-                Navigator.pop(context);
-                Navigator.pop(context);
-                mantraModel.selectMantra(mantraController.text);
+                Navigator.of(dialogContext).pop();
+                _handleMantraSelection(context, mantraController.text);
                 mantraController.clear();
               },
               child: const Text('OK'),
@@ -114,5 +112,22 @@ class _MyMantra extends State<MyMantra> {
       },
     );
     FocusScope.of(context).requestFocus(FocusNode());
+  }
+
+  void _handleMantraSelection(BuildContext context, String mantra) {
+    final trimmedMantra = mantra.trim();
+    if (trimmedMantra.isEmpty) {
+      return;
+    }
+    mantraModel.selectMantra(trimmedMantra);
+    _closeAfterSelection(context);
+  }
+
+  void _closeAfterSelection(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop(true);
+    } else {
+      context.go('/home');
+    }
   }
 }

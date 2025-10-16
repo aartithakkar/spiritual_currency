@@ -579,7 +579,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ],
               ),
-              onPress: () => context.go('/home/mantra'),
+              onPress: () async {
+                await context.push('/mantra');
+              },
             ),
           ),
           Expanded(

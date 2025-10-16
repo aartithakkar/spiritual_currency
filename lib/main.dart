@@ -21,14 +21,25 @@ import 'package:cureman/screens/repetition.dart';
 import 'package:cureman/screens/login.dart';
 import 'package:cureman/screens/home.dart';
 
-void main() {
-  runApp(const MyApp()); //const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final storedMantra = prefs.getString('selectedMantra');
+  final initialLocation =
+      (storedMantra == null || storedMantra.isEmpty) ? '/mantra' : '/home';
+
+  final goRouter = createRouter(initialLocation);
+  runApp(MyApp(router: goRouter));
 }
 
-GoRouter router() {
+GoRouter createRouter(String initialLocation) {
   return GoRouter(
-    initialLocation: '/home',
+    initialLocation: initialLocation,
     routes: [
+      GoRoute(
+        path: '/mantra',
+        builder: (context, state) => const MyMantra(),
+      ),
       GoRoute(
         path: '/login',
         builder: (context, state) => const MyLogin(),
@@ -46,10 +57,6 @@ GoRouter router() {
             builder: (context, state) => const MyMentor(),
           ),
           GoRoute(
-            path: 'mantra',
-            builder: (context, state) => const MyMantra(),
-          ),
-          GoRoute(
             path: 'mantraAudio',
             builder: (context, state) => const MyMantraAudio(),
           ),
@@ -64,7 +71,9 @@ GoRouter router() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({Key? key, required this.router}) : super(key: key);
+
+  final GoRouter router;
 
   // This widget is the root of your application.
   @override
@@ -81,7 +90,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp.router(
         title: 'Cureman',
         theme: appTheme,
-        routerConfig: router(),
+        routerConfig: router,
       ),
     );
   }
