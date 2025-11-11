@@ -667,26 +667,31 @@ class _MyHomePageState extends State<MyHomePage> {
                   Expanded(
                     flex: 4,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      textBaseline: TextBaseline.alphabetic,
                       children: [
-                        Text(
-                          '${(_counts / repetitionModel.selectedRepetitions).floor()}',
-                          style: const TextStyle(
-                            color: Colors.black,
-                            //padding: const EdgeInsets.all(2.0),
-                            fontSize: 50.0,
-                            fontWeight: FontWeight.w900,
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              '${(_counts / repetitionModel.selectedRepetitions).floor()}',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 50.0,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
                           ),
                         ),
-                        Text(
-                          '${_counts % repetitionModel.selectedRepetitions}',
-                          style: const TextStyle(
-                            color: Colors.black,
-                            //padding: const EdgeInsets.all(2.0),
-                            fontSize: 50.0,
-                            fontWeight: FontWeight.w900,
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              '${_counts % repetitionModel.selectedRepetitions}',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 50.0,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
                           ),
                         ),
                       ],
