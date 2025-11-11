@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:vibration/vibration.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -86,6 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
         isCounterRunning = true;
       }
     });
+    await _triggerCounterHaptics();
     _counts = await prefs.setInt('counts', _counts).then((bool success) {
       return _counts;
     });
@@ -109,6 +112,26 @@ class _MyHomePageState extends State<MyHomePage> {
     _counts = await prefs.setInt('counts', _counts).then((bool success) {
       return _counts;
     });
+  }
+
+  Future<void> _triggerCounterHaptics() async {
+    final repetitions = repetitionModel.selectedRepetitions;
+    final isOverflow =
+        repetitions > 0 ? _counts % repetitions == 0 : false;
+    final hasVibrator = await Vibration.hasVibrator() ?? false;
+
+    if (hasVibrator) {
+      final duration = isOverflow ? 180 : 45;
+      final amplitude = isOverflow ? 255 : 120;
+      await Vibration.vibrate(duration: duration, amplitude: amplitude);
+      return;
+    }
+
+    if (isOverflow) {
+      HapticFeedback.heavyImpact();
+    } else {
+      HapticFeedback.selectionClick();
+    }
   }
 
   void _resetCounter() async {
