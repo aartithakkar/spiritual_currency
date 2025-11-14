@@ -118,10 +118,10 @@ class _MyHomePageState extends State<MyHomePage> {
     final repetitions = repetitionModel.selectedRepetitions;
     final isOverflow =
         repetitions > 0 ? _counts % repetitions == 0 : false;
-    final hasVibrator = await Vibration.hasVibrator() ?? false;
+    final hasVibrator = await Vibration.hasVibrator();
 
     if (hasVibrator) {
-      final duration = isOverflow ? 180 : 45;
+      final duration = isOverflow ? 360 : 45;
       final amplitude = isOverflow ? 255 : 120;
       await Vibration.vibrate(duration: duration, amplitude: amplitude);
       return;
