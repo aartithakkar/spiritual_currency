@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vibration/vibration.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -46,6 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isCounterRunning = false;
 
   bool isMantraPlay = false;
+  bool _isCuremanEnabled = true;
 
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   String _goalText = 'What\'s my goal?';
@@ -656,9 +658,17 @@ class _MyHomePageState extends State<MyHomePage> {
                           icon: const Icon(Icons.exposure_minus_1),
                         ),
                         IconButton(
-                          onPressed: () {},
-                          icon: Image.asset(
-                            'assets/icons/cureman_logo_11.png',
+                          onPressed: () {
+                            setState(() {
+                              _isCuremanEnabled = !_isCuremanEnabled;
+                            });
+                          },
+                          icon: SvgPicture.asset(
+                            _isCuremanEnabled
+                                ? 'assets/icons/cureman_enabled.svg'
+                                : 'assets/icons/cureman_disabled.svg',
+                            height: 40,
+                            width: 40,
                           ),
                         ),
                       ],
